@@ -1,0 +1,22 @@
+version: '3'
+services:
+  rumm-api:
+    container_name: rumm-api
+    image: rumm-api:alplha
+    build: .
+    env_file: .env
+    ports:
+      - '8080:8080'
+    depends_on:
+      - postgres
+    restart: unless-stopped
+  postgres:
+    image: postgres
+    env_file: .env
+    environment:
+      POSTGRES_DB: "${RUMM_DBNAME}"
+      POSTGRES_USER: "${RUMM_DBUSER}"
+      POSTGRES_PASSWORD: "${RUMM_DBPASS}"
+    volumes:
+      - ./dbvolume:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql

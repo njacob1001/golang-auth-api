@@ -204,4 +204,7 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+*.sql
+.env
+dbvolume/
 # End of https://www.toptal.com/developers/gitignore/api/go,jetbrains,vscode,macos,windows,linux

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/huandu/go-sqlbuilder"
+	"github.com/kelseyhightower/envconfig"
 	_ "github.com/lib/pq"
 	"rumm-api/internal/creating"
 	"rumm-api/internal/platform/server"
@@ -12,28 +13,40 @@ import (
 	"time"
 )
 
-const (
-	host            = "0.0.0.0"
-	port            = 8080
-	dbUser          = "rummmain"
-	dbPass          = "2020rummworkerdevs"
-	dbHost          = "localhost"
-	dbPort          = 5432
-	dbName          = "rumm"
-	shutdownTimeout = 10 * time.Second
-)
 
 func Run() error {
+	var cfg config
+	err := envconfig.Process("RUMM", &cfg)
+
+	if err != nil {
+		return nil
+	}
+
 	sqlbuilder.DefaultFlavor = sqlbuilder.PostgreSQL
-	postgresURI := fmt.Sprintf("postgresql://%s@%s:%d/%s?password=%s", dbUser, dbHost, dbPort, dbName, dbPass)
+	postgresURI := fmt.Sprintf("postgresql://%s@%s:%d/%s?password=%s", cfg.DbUser, cfg.DbHost, cfg.DbPort, cfg.DbName, cfg.DbPass)
 	db, err := sql.Open("postgres", postgresURI)
 	if err != nil {
 		return err
 	}
-	clientRepository := postgres.NewClientRepository(db, shutdownTimeout)
+	clientRepository := postgres.NewClientRepository(db, cfg.DbTimeout)
 
 	creatingClientService := creating.NewClientService(clientRepository)
 
-	ctx, srv := server.New(context.Background(), host, port, shutdownTimeout, creatingClientService)
+	ctx, srv := server.New(context.Background(), cfg.Host, cfg.Port, cfg.ShutdownTimeout, creatingClientService)
 	return srv.Run(ctx)
+}
+
+type config struct {
+	// Server configuration
+	Host            string        `default:"0.0.0.0"`
+	Port            uint          `default:"8080"`
+	ShutdownTimeout time.Duration `default:"10s"`
+
+	// Database configuration
+	DbUser    string        `required:"true"`
+	DbPass    string        `required:"true"`
+	DbHost    string        `required:"true"`
+	DbPort    uint          `required:"true"`
+	DbName    string        `required:"true"`
+	DbTimeout time.Duration `default:"5s"`
 }

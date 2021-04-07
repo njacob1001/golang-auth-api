@@ -44,7 +44,7 @@ func (repository *ClientRepository) Save(ctx context.Context, client rumm.Client
 
 	if err != nil {
 		fmt.Println(err)
-		return fmt.Errorf("error trying to persist course on database: %v", err)
+		return fmt.Errorf("error trying to persist client on database: %v", err)
 	}
 
 	return nil
