@@ -32,6 +32,9 @@ func New(ctx context.Context, host string, port uint, shutdownTimeout time.Durat
 		creatingClientService: creatingCourseService,
 
 	}
+	server.engine.Use(gin.Recovery())
+	// debug mode
+	//server.engine.Use(gin.Logger())
 	server.registerRoutes()
 	return serverContext(ctx), server
 }
