@@ -6,15 +6,18 @@ import (
 	"fmt"
 	"github.com/huandu/go-sqlbuilder"
 	rumm "rumm-api/internal/client"
+	"time"
 )
 
 type ClientRepository struct {
 	db *sql.DB
+	dbTimeout time.Duration
 }
 
-func NewClientRepository(db *sql.DB) *ClientRepository {
+func NewClientRepository(db *sql.DB, dbTimeout time.Duration) *ClientRepository {
 	return &ClientRepository{
 		db: db,
+		dbTimeout: dbTimeout,
 	}
 }
 
@@ -34,7 +37,10 @@ func (repository *ClientRepository) Save(ctx context.Context, client rumm.Client
 		Cellphone: client.Cellphone(),
 	}).Build()
 
-	_, err := repository.db.ExecContext(ctx, query, args...)
+	ctxTimeout, cancel := context.WithTimeout(ctx, repository.dbTimeout)
+	defer cancel()
+
+	_, err := repository.db.ExecContext(ctxTimeout, query, args...)
 
 	if err != nil {
 		fmt.Println(err)
