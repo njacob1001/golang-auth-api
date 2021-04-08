@@ -7,6 +7,7 @@ import (
 	"github.com/huandu/go-sqlbuilder"
 	"github.com/kelseyhightower/envconfig"
 	_ "github.com/lib/pq"
+	"log"
 	"rumm-api/internal/creating"
 	"rumm-api/internal/platform/server"
 	"rumm-api/internal/platform/storage/postgres"
@@ -26,6 +27,7 @@ func Run() error {
 	postgresURI := fmt.Sprintf("postgresql://%s@%s:%d/%s?password=%s", cfg.DbUser, cfg.DbHost, cfg.DbPort, cfg.DbName, cfg.DbPass)
 	db, err := sql.Open("postgres", postgresURI)
 	if err != nil {
+		log.Println("error al conectar", err)
 		return err
 	}
 	clientRepository := postgres.NewClientRepository(db, cfg.DbTimeout)
