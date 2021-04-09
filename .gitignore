@@ -206,5 +206,6 @@ $RECYCLE.BIN/
 
 *.sql
 .env
+data/
 dbvolume/
 # End of https://www.toptal.com/developers/gitignore/api/go,jetbrains,vscode,macos,windows,linux

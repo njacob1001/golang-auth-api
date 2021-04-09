@@ -7,27 +7,25 @@ import (
 	"github.com/huandu/go-sqlbuilder"
 	"github.com/kelseyhightower/envconfig"
 	_ "github.com/lib/pq"
-	"log"
 	"rumm-api/internal/creating"
 	"rumm-api/internal/platform/server"
 	"rumm-api/internal/platform/storage/postgres"
 	"time"
 )
 
-
 func Run() error {
 	var cfg config
 	err := envconfig.Process("RUMM", &cfg)
-
 	if err != nil {
 		return nil
 	}
 
 	sqlbuilder.DefaultFlavor = sqlbuilder.PostgreSQL
-	postgresURI := fmt.Sprintf("postgresql://%s@%s:%d/%s?password=%s", cfg.DbUser, cfg.DbHost, cfg.DbPort, cfg.DbName, cfg.DbPass)
+
+	postgresURI := fmt.Sprintf("postgres://%v:%v@%v:%v/%v?sslmode=disable", cfg.DbUser, cfg.DbPass, cfg.DbHost, cfg.DbPort, cfg.DbName)
+
 	db, err := sql.Open("postgres", postgresURI)
 	if err != nil {
-		log.Println("error al conectar", err)
 		return err
 	}
 	clientRepository := postgres.NewClientRepository(db, cfg.DbTimeout)

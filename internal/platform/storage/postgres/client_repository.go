@@ -22,7 +22,6 @@ func NewClientRepository(db *sql.DB, dbTimeout time.Duration) *ClientRepository 
 }
 
 func (repository *ClientRepository) Save(ctx context.Context, client rumm.Client) error {
-
 	clientSQLStruck := sqlbuilder.NewStruct(new(sqlClient))
 
 	query, args := clientSQLStruck.InsertInto(sqlClientTable, sqlClient{
@@ -43,7 +42,6 @@ func (repository *ClientRepository) Save(ctx context.Context, client rumm.Client
 	_, err := repository.db.ExecContext(ctxTimeout, query, args...)
 
 	if err != nil {
-		fmt.Println(err)
 		return fmt.Errorf("error trying to persist client on database: %v", err)
 	}
 
