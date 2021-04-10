@@ -8,10 +8,12 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"rumm-api/internal/creating"
-	"rumm-api/internal/platform/server/handler/clients"
+	"rumm-api/internal/core/services/clients"
+	"rumm-api/internal/platform/server/handler/clientsHandler"
 	"time"
 )
+
+type Option func(*Server) error
 
 type Server struct {
 	httpAddress string
@@ -20,23 +22,24 @@ type Server struct {
 
 
 	//deps
-	creatingClientService creating.ClientService
+	creatingClientService clients.ClientService
 }
 
-func New(ctx context.Context, host string, port uint, shutdownTimeout time.Duration,creatingCourseService creating.ClientService) (context.Context, Server) {
+func NewServer(ctx context.Context, options ...Option) (context.Context, Server, error) {
 	server := Server{
 		engine:                gin.New(),
-		httpAddress:           fmt.Sprintf("%s:%d", host, port),
-
-		shutdownTimeout: shutdownTimeout,
-		creatingClientService: creatingCourseService,
-
+	}
+	for _, option := range options {
+		err := option(&server)
+		if err != nil {
+			return nil, server, err
+		}
 	}
 	server.engine.Use(gin.Recovery())
 	// debug mode
 	//server.engine.Use(gin.Logger())
 	server.registerRoutes()
-	return serverContext(ctx), server
+	return serverContext(ctx), server, nil
 }
 
 func (server *Server) Run(ctx context.Context) error {
@@ -63,7 +66,7 @@ func (server *Server) Run(ctx context.Context) error {
 }
 
 func (server *Server) registerRoutes() {
-	server.engine.POST("/clients", clients.CreateHandler(server.creatingClientService))
+	server.engine.POST("/clients", clientsHandler.CreateHandler(server.creatingClientService))
 }
 
 func serverContext(ctx context.Context) context.Context {
@@ -76,4 +79,25 @@ func serverContext(ctx context.Context) context.Context {
 	}()
 
 	return ctx
+}
+
+func WithAddress(host string, port uint) Option {
+	return func(server *Server) error {
+		server.httpAddress = fmt.Sprintf("%s:%d", host, port)
+		return nil
+	}
+}
+
+func WithTimeout(timeout time.Duration) Option {
+	return func(server *Server) error {
+		server.shutdownTimeout = timeout
+		return nil
+	}
+}
+
+func WithClientService(clientService clients.ClientService) Option {
+	return func(server *Server) error {
+		server.creatingClientService = clientService
+		return nil
+	}
 }

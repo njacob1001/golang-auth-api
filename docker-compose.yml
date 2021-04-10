@@ -1,7 +1,7 @@
 version: '3'
 services:
   portainer:
-    image: portainer/portainer
+    image: portainer/portainer-ce:latest
     command: -H unix:///var/run/docker.sock
     restart: always
     ports:
@@ -9,7 +9,7 @@ services:
       - 8000:8000
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - portainer_data:/data
+      - portainer:/data
   api:
     container_name: api
     image: rumm-api:alplha
@@ -31,8 +31,8 @@ services:
       POSTGRES_PASSWORD: "${RUMM_DBPASS}"
       POSTGRES_DB: "${RUMM_DBNAME}"
     volumes:
-      - ./data:/var/lib/postgresql
+      - pg_database:/var/lib/postgresql
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-
 volumes:
-  portainer_data:
+  portainer:
+  pg_database:

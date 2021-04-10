@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/huandu/go-sqlbuilder"
-	rumm "rumm-api/internal/client"
+	"rumm-api/internal/core/domain"
 	"time"
 )
 
@@ -21,7 +21,7 @@ func NewClientRepository(db *sql.DB, dbTimeout time.Duration) *ClientRepository 
 	}
 }
 
-func (repository *ClientRepository) Save(ctx context.Context, client rumm.Client) error {
+func (repository *ClientRepository) Save(ctx context.Context, client domain.Client) error {
 	clientSQLStruck := sqlbuilder.NewStruct(new(sqlClient))
 
 	query, args := clientSQLStruck.InsertInto(sqlClientTable, sqlClient{

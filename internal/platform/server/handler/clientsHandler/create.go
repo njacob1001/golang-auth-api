@@ -1,11 +1,11 @@
-package clients
+package clientsHandler
 
 import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	rumm "rumm-api/internal/client"
-	"rumm-api/internal/creating"
+	"rumm-api/internal/core/services/clients"
+	"rumm-api/kit/identifier"
 )
 
 type createRequest struct {
@@ -20,7 +20,7 @@ type createRequest struct {
 	Cellphone string `json:"cellphone" binding:"required"`
 }
 
-func CreateHandler(creatingClientService creating.ClientService) gin.HandlerFunc {
+func CreateHandler(creatingClientService clients.ClientService) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var req createRequest
 		if err := ctx.BindJSON(&req); err != nil {
@@ -32,7 +32,7 @@ func CreateHandler(creatingClientService creating.ClientService) gin.HandlerFunc
 
 		if err != nil {
 			switch {
-			case errors.Is(err, rumm.ErrInvalidClientUUID):
+			case errors.Is(err, identifier.ErrCreatingClientUUID):
 				ctx.JSON(http.StatusBadRequest, err.Error())
 				return
 			default:

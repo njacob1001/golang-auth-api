@@ -1,23 +1,24 @@
-package creating
+package clients
 
 import (
 	"context"
 	"errors"
-	rumm "rumm-api/internal/client"
-	"rumm-api/internal/platform/storage/storagemocks"
-
-	"testing"
-
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
-
-	"github.com/stretchr/testify/assert"
+	"rumm-api/internal/core/domain"
+	"rumm-api/mocks/mockups"
+	"testing"
 )
 
 func Test_ClientService_CreateClient_RepositoryError(t *testing.T) {
 	UUID, Name, LastName, Birthday, Email, City, Address, password, Cellphone := "66021013-a0ce-4104-b29f-329686825aeb", "test", "test", "2020-01-01", "test", "test", "test", "some", "testing"
 
-	client, err := rumm.NewClient(UUID, Name, LastName, Birthday, Email, City, Address, Cellphone, password)
+	client, err := domain.NewClient(
+		UUID,
+		domain.WithPersonalInformation(Name, LastName, Birthday),
+		domain.WithLocation(City, Address),
+		domain.WithAccount(Email, password, Cellphone))
 	require.NoError(t, err)
 
 	clientRepositoryMock := new(storagemocks.ClientRepository)
@@ -34,7 +35,10 @@ func Test_ClientService_CreateClient_RepositoryError(t *testing.T) {
 func Test_ClientService_CreateClient_Succeed(t *testing.T) {
 	UUID, Name, LastName, Birthday, Email, City, Address, password, Cellphone := "66021013-a0ce-4104-b29f-329686825aeb", "test", "test", "2020-01-01", "test", "test", "test", "test", "testing"
 
-	course, err := rumm.NewClient(UUID, Name, LastName, Birthday, Email, City, Address, Cellphone, password)
+	course, err := domain.NewClient(UUID,
+		domain.WithPersonalInformation(Name, LastName, Birthday),
+		domain.WithLocation(City, Address),
+		domain.WithAccount(Email, password, Cellphone))
 	require.NoError(t, err)
 
 	clientRepositoryMock := new(storagemocks.ClientRepository)

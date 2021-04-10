@@ -4,7 +4,7 @@ package storagemocks
 
 import (
 	context "context"
-	rumm "rumm-api/internal/client"
+	domain "rumm-api/internal/core/domain"
 
 	mock "github.com/stretchr/testify/mock"
 )
@@ -15,11 +15,11 @@ type ClientRepository struct {
 }
 
 // Save provides a mock function with given fields: ctx, client
-func (_m *ClientRepository) Save(ctx context.Context, client rumm.Client) error {
+func (_m *ClientRepository) Save(ctx context.Context, client domain.Client) error {
 	ret := _m.Called(ctx, client)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, rumm.Client) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, domain.Client) error); ok {
 		r0 = rf(ctx, client)
 	} else {
 		r0 = ret.Error(0)

@@ -7,7 +7,8 @@ import (
 	"github.com/huandu/go-sqlbuilder"
 	"github.com/kelseyhightower/envconfig"
 	_ "github.com/lib/pq"
-	"rumm-api/internal/creating"
+	"rumm-api/internal/core/services/clients"
+
 	"rumm-api/internal/platform/server"
 	"rumm-api/internal/platform/storage/postgres"
 	"time"
@@ -28,11 +29,21 @@ func Run() error {
 	if err != nil {
 		return err
 	}
+
 	clientRepository := postgres.NewClientRepository(db, cfg.DbTimeout)
+	clientService := clients.NewClientService(clientRepository)
 
-	creatingClientService := creating.NewClientService(clientRepository)
 
-	ctx, srv := server.New(context.Background(), cfg.Host, cfg.Port, cfg.ShutdownTimeout, creatingClientService)
+	ctx, srv, err := server.NewServer(
+		context.Background(),
+		server.WithTimeout(cfg.ShutdownTimeout),
+		server.WithAddress(cfg.Host, cfg.Port),
+		server.WithClientService(clientService),
+	)
+
+	if err != nil {
+		return err
+	}
 	return srv.Run(ctx)
 }
 

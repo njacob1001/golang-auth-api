@@ -1,4 +1,4 @@
-package clients
+package clientsHandler
 
 import (
 	"bytes"
@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
-	"rumm-api/internal/creating"
-	"rumm-api/internal/platform/storage/storagemocks"
+	"rumm-api/internal/core/services/clients"
+	"rumm-api/mocks/mockups"
 	"testing"
 )
 
@@ -18,11 +18,11 @@ func TestCreateHandler(t *testing.T) {
 	clientRepository := new(storagemocks.ClientRepository)
 	clientRepository.On("Save", mock.Anything, mock.Anything).Return(nil)
 
-	createClientService := creating.NewClientService(clientRepository)
+	createClientService := clients.NewClientService(clientRepository)
 
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
-	r.POST("/clients", CreateHandler(createClientService))
+	r.POST("/clientsHandler", CreateHandler(createClientService))
 
 	t.Run("given and invalid request it return 400", func(t *testing.T) {
 		createClientReq := createRequest{
@@ -34,7 +34,7 @@ func TestCreateHandler(t *testing.T) {
 		// stop execution test if the condition fails
 		require.NoError(t, err) // comprobar que no exista error al marchalear el json
 
-		req, err := http.NewRequest(http.MethodPost, "/clients", bytes.NewBuffer(b))
+		req, err := http.NewRequest(http.MethodPost, "/clientsHandler", bytes.NewBuffer(b))
 		require.NoError(t, err) //  comprobar que no exista error al llamar el endpoint
 
 		rec := httptest.NewRecorder()
@@ -62,7 +62,7 @@ func TestCreateHandler(t *testing.T) {
 		// stop execution test if the condition fails
 		require.NoError(t, err) // comprobar que no exista error al marchalear el json
 
-		req, err := http.NewRequest(http.MethodPost, "/clients", bytes.NewBuffer(b))
+		req, err := http.NewRequest(http.MethodPost, "/clientsHandler", bytes.NewBuffer(b))
 		require.NoError(t, err) //  comprobar que no exista error al llamar el endpoint
 
 		rec := httptest.NewRecorder()
