@@ -9,21 +9,22 @@ import (
 	"time"
 )
 
+var clientSQLStruck = sqlbuilder.NewStruct(new(sqlClient)).For(sqlbuilder.PostgreSQL)
+var clientInfoSQLStruck = sqlbuilder.NewStruct(new(clientInfo)).For(sqlbuilder.PostgreSQL)
+
 type ClientRepository struct {
-	db *sql.DB
+	db        *sql.DB
 	dbTimeout time.Duration
 }
 
 func NewClientRepository(db *sql.DB, dbTimeout time.Duration) *ClientRepository {
 	return &ClientRepository{
-		db: db,
+		db:        db,
 		dbTimeout: dbTimeout,
 	}
 }
 
 func (repository *ClientRepository) Save(ctx context.Context, client domain.Client) error {
-	clientSQLStruck := sqlbuilder.NewStruct(new(sqlClient))
-
 	query, args := clientSQLStruck.InsertInto(sqlClientTable, sqlClient{
 		ID:        client.ID(),
 		Name:      client.Name(),
@@ -46,4 +47,32 @@ func (repository *ClientRepository) Save(ctx context.Context, client domain.Clie
 	}
 
 	return nil
+}
+
+func (repository *ClientRepository) FindByID(ctx context.Context, clientID string) (domain.Client, error) {
+
+	sb := clientInfoSQLStruck.SelectFrom(sqlClientTable)
+	query, args := sb.Where(sb.Equal("id", clientID)).Build()
+
+	ctxTimeout, cancel := context.WithTimeout(ctx, repository.dbTimeout)
+	defer cancel()
+
+	row := repository.db.QueryRowContext(ctxTimeout, query, args...)
+
+	var dbClient clientInfo
+
+	if err := row.Scan(clientInfoSQLStruck.Addr(&dbClient)...); err != nil {
+		return domain.Client{}, fmt.Errorf("error trying to find client on database, client doesn't exist: %v", err)
+	}
+
+	client, err := domain.NewClient(
+		dbClient.ID,
+		domain.WithAccount(dbClient.Email, "", dbClient.Cellphone),
+		domain.WithLocation(dbClient.City, dbClient.Address),
+		domain.WithPersonalInformation(dbClient.Name, dbClient.LastName, dbClient.Birthday.Format("2006-01-02")))
+	if err != nil {
+		return domain.Client{}, err
+	}
+
+	return client, nil
 }

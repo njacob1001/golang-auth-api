@@ -6,13 +6,14 @@ import (
 	"net/http"
 	"rumm-api/internal/core/services/clients"
 	"rumm-api/kit/identifier"
+	"time"
 )
 
 type createRequest struct {
 	ID        string `json:"id" binding:"required"`
 	Name      string `json:"name" binding:"required"`
 	LastName  string `json:"lastName" binding:"required"`
-	BirthDay  string `json:"birthday" binding:"required"`
+	BirthDay  time.Time `json:"birthday" binding:"required" time_format:"2006-01-02"`
 	Email     string `json:"email" binding:"required"`
 	Password  string `json:"password" binding:"required"`
 	City      string `json:"city" binding:"required"`
@@ -20,7 +21,7 @@ type createRequest struct {
 	Cellphone string `json:"cellphone" binding:"required"`
 }
 
-func CreateHandler(creatingClientService clients.ClientService) gin.HandlerFunc {
+func CreateHandler(clientService clients.ClientService) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var req createRequest
 		if err := ctx.BindJSON(&req); err != nil {
@@ -28,11 +29,11 @@ func CreateHandler(creatingClientService clients.ClientService) gin.HandlerFunc 
 			return
 		}
 
-		err := creatingClientService.CreateClient(ctx, req.ID, req.Name, req.LastName, req.BirthDay, req.Email, req.City, req.Address, req.Cellphone, req.Password)
+		err := clientService.CreateClient(ctx, req.ID, req.Name, req.LastName, req.BirthDay.Format("2006-01-02"), req.Email, req.City, req.Address, req.Cellphone, req.Password)
 
 		if err != nil {
 			switch {
-			case errors.Is(err, identifier.ErrCreatingClientUUID):
+			case errors.Is(err, identifier.ErrInvalidClientUUID):
 				ctx.JSON(http.StatusBadRequest, err.Error())
 				return
 			default:

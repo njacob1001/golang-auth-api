@@ -14,6 +14,27 @@ type ClientRepository struct {
 	mock.Mock
 }
 
+// FindByID provides a mock function with given fields: ctx, clientID
+func (_m *ClientRepository) FindByID(ctx context.Context, clientID string) (domain.Client, error) {
+	ret := _m.Called(ctx, clientID)
+
+	var r0 domain.Client
+	if rf, ok := ret.Get(0).(func(context.Context, string) domain.Client); ok {
+		r0 = rf(ctx, clientID)
+	} else {
+		r0 = ret.Get(0).(domain.Client)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, clientID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Save provides a mock function with given fields: ctx, client
 func (_m *ClientRepository) Save(ctx context.Context, client domain.Client) error {
 	ret := _m.Called(ctx, client)

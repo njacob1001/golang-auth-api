@@ -22,7 +22,7 @@ type Server struct {
 
 
 	//deps
-	creatingClientService clients.ClientService
+	clientService clients.ClientService
 }
 
 func NewServer(ctx context.Context, options ...Option) (context.Context, Server, error) {
@@ -37,7 +37,7 @@ func NewServer(ctx context.Context, options ...Option) (context.Context, Server,
 	}
 	server.engine.Use(gin.Recovery())
 	// debug mode
-	//server.engine.Use(gin.Logger())
+	server.engine.Use(gin.Logger())
 	server.registerRoutes()
 	return serverContext(ctx), server, nil
 }
@@ -66,7 +66,8 @@ func (server *Server) Run(ctx context.Context) error {
 }
 
 func (server *Server) registerRoutes() {
-	server.engine.POST("/clients", clientsHandler.CreateHandler(server.creatingClientService))
+	server.engine.POST("/clients", clientsHandler.CreateHandler(server.clientService))
+	server.engine.GET("/clients/:id", clientsHandler.FindByIDHandler(server.clientService))
 }
 
 func serverContext(ctx context.Context) context.Context {
@@ -97,7 +98,7 @@ func WithTimeout(timeout time.Duration) Option {
 
 func WithClientService(clientService clients.ClientService) Option {
 	return func(server *Server) error {
-		server.creatingClientService = clientService
+		server.clientService = clientService
 		return nil
 	}
 }

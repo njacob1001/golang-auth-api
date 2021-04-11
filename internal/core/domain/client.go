@@ -1,17 +1,8 @@
 package domain
 
-
-
 import (
-	"context"
 	"rumm-api/kit/identifier"
 )
-
-type ClientRepository interface {
-	Save(ctx context.Context, client Client) error
-}
-
-//go:generate mockery --case=snake --outpkg=storagemocks --output=../../../mocks/mockups --name=ClientRepository
 
 type Client struct {
 	id        string

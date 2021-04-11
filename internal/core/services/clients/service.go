@@ -29,4 +29,7 @@ func (service ClientService) CreateClient(ctx context.Context, uuid, name, lastN
 	return service.clientRepository.Save(ctx, client)
 }
 
+func (service ClientService) FindClientByID(ctx context.Context, id string) (domain.Client, error) {
+	return service.clientRepository.FindByID(ctx, id)
+}
 

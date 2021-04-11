@@ -12,6 +12,7 @@ import (
 	"rumm-api/internal/core/services/clients"
 	"rumm-api/mocks/mockups"
 	"testing"
+	"time"
 )
 
 func TestCreateHandler(t *testing.T) {
@@ -52,7 +53,7 @@ func TestCreateHandler(t *testing.T) {
 			Email:    "some",
 			Address:  "test",
 			City:     "test",
-			BirthDay: "2020-12-12",
+			BirthDay: time.Now(),
 			LastName: "test",
 			Name:     "test",
 			Password: "test",
