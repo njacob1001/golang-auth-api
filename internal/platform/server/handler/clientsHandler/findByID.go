@@ -3,6 +3,7 @@ package clientsHandler
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"net/http"
 	"rumm-api/internal/core/services/clients"
 	"rumm-api/kit/identifier"
 )
@@ -26,20 +27,20 @@ func FindByIDHandler(clientService clients.ClientService) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var request clientRequest
 		if err := ctx.ShouldBindUri(&request); err != nil {
-			ctx.JSON(400, gin.H{"message": fmt.Sprintf("%v", err)})
+			ctx.JSON(http.StatusInternalServerError, gin.H{"message": fmt.Sprintf("%v", err)})
 			return
 		}
 
 		id, err := identifier.ValidateIdentifier(request.ID)
 		if err != nil {
-			ctx.JSON(400, gin.H{"message": fmt.Sprintf("%v", err)})
+			ctx.JSON(http.StatusNotAcceptable, gin.H{"message": fmt.Sprintf("%v", err)})
 			return
 		}
 
 		client, err := clientService.FindClientByID(ctx, id.String)
 
 		if err != nil {
-			ctx.JSON(400, gin.H{"message": fmt.Sprintf("%v", err)})
+			ctx.JSON(http.StatusNotFound, gin.H{"message": fmt.Sprintf("%v", err)})
 			return
 		}
 
@@ -54,7 +55,7 @@ func FindByIDHandler(clientService clients.ClientService) gin.HandlerFunc {
 			Cellphone: client.Cellphone(),
 		}
 
-		ctx.JSON(200, response)
+		ctx.JSON(http.StatusOK, response)
 		return
 
 	}
