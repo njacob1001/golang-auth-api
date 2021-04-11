@@ -33,6 +33,8 @@ services:
     volumes:
       - pg_database:/var/lib/postgresql
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - '25432:5432'
 volumes:
   portainer:
   pg_database:
