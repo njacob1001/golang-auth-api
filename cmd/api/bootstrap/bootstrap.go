@@ -33,13 +33,14 @@ func Run() error {
 	clientRepository := postgres.NewClientRepository(db, cfg.DbTimeout)
 	clientService := clients.NewClientService(clientRepository)
 
+	isDevelopMode := !(cfg.ServerMode == "release")
 
 	ctx, srv, err := server.NewServer(
 		context.Background(),
 		server.WithTimeout(cfg.ShutdownTimeout),
 		server.WithAddress(cfg.Host, cfg.Port),
 		server.WithClientService(clientService),
-	)
+		server.WithDevelopEnv(isDevelopMode))
 
 	if err != nil {
 		return err
@@ -54,10 +55,11 @@ type config struct {
 	ShutdownTimeout time.Duration `default:"10s"`
 
 	// Database configuration
-	DbUser    string        `required:"true"`
-	DbPass    string        `required:"true"`
-	DbHost    string        `required:"true"`
-	DbPort    uint          `required:"true"`
-	DbName    string        `required:"true"`
-	DbTimeout time.Duration `default:"5s"`
+	DbUser     string        `required:"true"`
+	DbPass     string        `required:"true"`
+	DbHost     string        `required:"true"`
+	DbPort     uint          `required:"true"`
+	DbName     string        `required:"true"`
+	DbTimeout  time.Duration `default:"5s"`
+	ServerMode string        `default:"develop"`
 }

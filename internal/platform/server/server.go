@@ -16,10 +16,10 @@ import (
 type Option func(*Server) error
 
 type Server struct {
-	httpAddress string
-	engine      *gin.Engine
+	httpAddress     string
+	engine          *gin.Engine
 	shutdownTimeout time.Duration
-
+	developMode     bool
 
 	//deps
 	clientService clients.ClientService
@@ -27,7 +27,7 @@ type Server struct {
 
 func NewServer(ctx context.Context, options ...Option) (context.Context, Server, error) {
 	server := Server{
-		engine:                gin.New(),
+		engine: gin.New(),
 	}
 	for _, option := range options {
 		err := option(&server)
@@ -36,8 +36,11 @@ func NewServer(ctx context.Context, options ...Option) (context.Context, Server,
 		}
 	}
 	server.engine.Use(gin.Recovery())
-	// debug mode
-	server.engine.Use(gin.Logger())
+
+	if server.developMode {
+		server.engine.Use(gin.Logger())
+	}
+
 	server.registerRoutes()
 	return serverContext(ctx), server, nil
 }
@@ -56,7 +59,7 @@ func (server *Server) Run(ctx context.Context) error {
 		}
 	}()
 
-	<- ctx.Done()
+	<-ctx.Done()
 
 	ctxShutDown, cancel := context.WithTimeout(context.Background(), server.shutdownTimeout)
 	defer cancel()
@@ -74,7 +77,7 @@ func serverContext(ctx context.Context) context.Context {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 	ctx, cancel := context.WithCancel(ctx)
-	go func(){
+	go func() {
 		<-c
 		cancel()
 	}()
@@ -99,6 +102,12 @@ func WithTimeout(timeout time.Duration) Option {
 func WithClientService(clientService clients.ClientService) Option {
 	return func(server *Server) error {
 		server.clientService = clientService
+		return nil
+	}
+}
+func WithDevelopEnv(isDevelopMode bool) Option {
+	return func(server *Server) error {
+		server.developMode = isDevelopMode
 		return nil
 	}
 }
