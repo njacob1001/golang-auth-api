@@ -19,7 +19,7 @@ func TestCreateHandler(t *testing.T) {
 	clientRepository := new(storagemocks.ClientRepository)
 	clientRepository.On("Save", mock.Anything, mock.Anything).Return(nil)
 
-	createClientService := clients.NewClientService(clientRepository)
+	createClientService := service.NewClientService(clientRepository)
 
 	gin.SetMode(gin.TestMode)
 	r := gin.New()

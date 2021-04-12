@@ -22,7 +22,7 @@ type Server struct {
 	developMode     bool
 
 	//deps
-	clientService clients.ClientService
+	clientService service.ClientService
 }
 
 func NewServer(ctx context.Context, options ...Option) (context.Context, Server, error) {
@@ -99,7 +99,7 @@ func WithTimeout(timeout time.Duration) Option {
 	}
 }
 
-func WithClientService(clientService clients.ClientService) Option {
+func WithClientService(clientService service.ClientService) Option {
 	return func(server *Server) error {
 		server.clientService = clientService
 		return nil

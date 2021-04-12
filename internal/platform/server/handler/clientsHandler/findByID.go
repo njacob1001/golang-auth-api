@@ -23,7 +23,7 @@ type clientResponse struct {
 	Cellphone string `json:"cellphone"`
 }
 
-func FindByIDHandler(clientService clients.ClientService) gin.HandlerFunc {
+func FindByIDHandler(clientService service.ClientService) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var request clientRequest
 		if err := ctx.ShouldBindUri(&request); err != nil {

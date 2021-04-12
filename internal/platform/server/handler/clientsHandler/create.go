@@ -20,7 +20,7 @@ type createRequest struct {
 	Cellphone string `json:"cellphone" binding:"required"`
 }
 
-func CreateHandler(clientService clients.ClientService) gin.HandlerFunc {
+func CreateHandler(clientService service.ClientService) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var req createRequest
 		if err := ctx.BindJSON(&req); err != nil {

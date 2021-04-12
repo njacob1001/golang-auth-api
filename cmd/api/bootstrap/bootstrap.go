@@ -31,7 +31,7 @@ func Run() error {
 	}
 
 	clientRepository := postgres.NewClientRepository(db, cfg.DbTimeout)
-	clientService := clients.NewClientService(clientRepository)
+	clientService := service.NewClientService(clientRepository)
 
 	isDevelopMode := !(cfg.ServerMode == "release")
 
