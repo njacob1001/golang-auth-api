@@ -15,7 +15,6 @@ type createRequest struct {
 	LastName  string `json:"lastName" binding:"required"`
 	BirthDay  time.Time `json:"birthday" binding:"required" time_format:"2006-01-02"`
 	Email     string `json:"email" binding:"required"`
-	Password  string `json:"password" binding:"required"`
 	City      string `json:"city" binding:"required"`
 	Address   string `json:"address" binding:"required"`
 	Cellphone string `json:"cellphone" binding:"required"`
@@ -29,7 +28,7 @@ func CreateHandler(clientService clients.ClientService) gin.HandlerFunc {
 			return
 		}
 
-		err := clientService.CreateClient(ctx, req.ID, req.Name, req.LastName, req.BirthDay.Format("2006-01-02"), req.Email, req.City, req.Address, req.Cellphone, req.Password)
+		err := clientService.CreateClient(ctx, req.ID, req.Name, req.LastName, req.BirthDay.Format("2006-01-02"), req.Email, req.City, req.Address, req.Cellphone)
 
 		if err != nil {
 			switch {

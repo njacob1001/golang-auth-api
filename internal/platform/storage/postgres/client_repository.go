@@ -33,7 +33,6 @@ func (repository *ClientRepository) Save(ctx context.Context, client domain.Clie
 		Email:     client.Email(),
 		City:      client.City(),
 		Address:   client.Address(),
-		Password:  client.Password(),
 		Cellphone: client.Cellphone(),
 	}).Build()
 
@@ -67,7 +66,7 @@ func (repository *ClientRepository) FindByID(ctx context.Context, clientID strin
 
 	client, err := domain.NewClient(
 		dbClient.ID,
-		domain.WithAccount(dbClient.Email, "", dbClient.Cellphone),
+		domain.WithAccount(dbClient.Email, dbClient.Cellphone),
 		domain.WithLocation(dbClient.City, dbClient.Address),
 		domain.WithPersonalInformation(dbClient.Name, dbClient.LastName, dbClient.Birthday.Format("2006-01-02")))
 	if err != nil {

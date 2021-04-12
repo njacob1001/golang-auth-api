@@ -12,13 +12,13 @@ import (
 )
 
 func Test_ClientService_CreateClient_RepositoryError(t *testing.T) {
-	UUID, Name, LastName, Birthday, Email, City, Address, password, Cellphone := "66021013-a0ce-4104-b29f-329686825aeb", "test", "test", "2020-01-01", "test", "test", "test", "some", "testing"
+	UUID, Name, LastName, Birthday, Email, City, Address, Cellphone := "66021013-a0ce-4104-b29f-329686825aeb", "test", "test", "2020-01-01", "test", "test", "test", "testing"
 
 	client, err := domain.NewClient(
 		UUID,
 		domain.WithPersonalInformation(Name, LastName, Birthday),
 		domain.WithLocation(City, Address),
-		domain.WithAccount(Email, password, Cellphone))
+		domain.WithAccount(Email, Cellphone))
 	require.NoError(t, err)
 
 	clientRepositoryMock := new(storagemocks.ClientRepository)
@@ -26,19 +26,19 @@ func Test_ClientService_CreateClient_RepositoryError(t *testing.T) {
 
 	clientService := NewClientService(clientRepositoryMock)
 
-	err = clientService.CreateClient(context.Background(), UUID, Name, LastName, Birthday, Email, City, Address, Cellphone, password)
+	err = clientService.CreateClient(context.Background(), UUID, Name, LastName, Birthday, Email, City, Address, Cellphone)
 
 	clientRepositoryMock.AssertExpectations(t)
 	assert.Error(t, err)
 }
 
 func Test_ClientService_CreateClient_Succeed(t *testing.T) {
-	UUID, Name, LastName, Birthday, Email, City, Address, password, Cellphone := "66021013-a0ce-4104-b29f-329686825aeb", "test", "test", "2020-01-01", "test", "test", "test", "test", "testing"
+	UUID, Name, LastName, Birthday, Email, City, Address, Cellphone := "66021013-a0ce-4104-b29f-329686825aeb", "test", "test", "2020-01-01", "test", "test", "test", "testing"
 
 	course, err := domain.NewClient(UUID,
 		domain.WithPersonalInformation(Name, LastName, Birthday),
 		domain.WithLocation(City, Address),
-		domain.WithAccount(Email, password, Cellphone))
+		domain.WithAccount(Email, Cellphone))
 	require.NoError(t, err)
 
 	clientRepositoryMock := new(storagemocks.ClientRepository)
@@ -46,7 +46,7 @@ func Test_ClientService_CreateClient_Succeed(t *testing.T) {
 
 	clientService := NewClientService(clientRepositoryMock)
 
-	err = clientService.CreateClient(context.Background(), UUID, Name, LastName, Birthday, Email, City, Address, Cellphone, password)
+	err = clientService.CreateClient(context.Background(), UUID, Name, LastName, Birthday, Email, City, Address, Cellphone)
 
 	clientRepositoryMock.AssertExpectations(t)
 	assert.NoError(t, err)

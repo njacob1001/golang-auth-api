@@ -16,10 +16,10 @@ func NewClientService(clientRepository ports.ClientRepository) ClientService {
 	}
 }
 
-func (service ClientService) CreateClient(ctx context.Context, uuid, name, lastName, birthday, email, city, address, cellphone, password string) error {
+func (service ClientService) CreateClient(ctx context.Context, uuid, name, lastName, birthday, email, city, address, cellphone string) error {
 	client, err := domain.NewClient(
 		uuid,
-		domain.WithAccount(email, password, cellphone),
+		domain.WithAccount(email, cellphone),
 		domain.WithLocation(city, address),
 		domain.WithPersonalInformation(name, lastName, birthday),
 	)

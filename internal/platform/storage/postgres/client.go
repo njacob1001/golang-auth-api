@@ -15,7 +15,6 @@ type sqlClient struct {
 	Email     string `db:"email"`
 	City      string `db:"city"`
 	Address   string `db:"address"`
-	Password  string `db:"password"`
 	Cellphone string `db:"cellphone"`
 }
 type clientInfo struct {

@@ -56,7 +56,6 @@ func TestCreateHandler(t *testing.T) {
 			BirthDay: time.Now(),
 			LastName: "test",
 			Name:     "test",
-			Password: "test",
 			Cellphone: "testing",
 		}
 		b, err := json.Marshal(createClientReq)

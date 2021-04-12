@@ -13,7 +13,6 @@ type Client struct {
 	city      string
 	address   string
 	cellphone string
-	password  string
 }
 
 type Option func(*Client) error
@@ -37,9 +36,8 @@ func NewClient(uuid string, options ...Option) (Client, error) {
 	return client, nil
 }
 
-func WithAccount(email, password, cellphone string) Option {
+func WithAccount(email, cellphone string) Option {
 	return func(client *Client) error {
-		client.password = password
 		client.email = email
 		client.cellphone = cellphone
 		return nil
@@ -87,8 +85,4 @@ func (c Client) Address() string {
 }
 func (c Client) Cellphone() string {
 	return c.cellphone
-}
-
-func (c Client) Password() string {
-	return c.password
 }
