@@ -8,5 +8,6 @@ import (
 type ClientRepository interface {
 	Save(ctx context.Context, client domain.Client) error
 	FindByID(ctx context.Context, clientID string) (domain.Client, error)
+	DeleteByID(ctx context.Context, clientID string) error
 }
 //go:generate mockery --case=snake --outpkg=storagemocks --output=../../../mocks/mockups --name=ClientRepository

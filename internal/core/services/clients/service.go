@@ -33,3 +33,6 @@ func (service ClientService) FindClientByID(ctx context.Context, id string) (dom
 	return service.clientRepository.FindByID(ctx, id)
 }
 
+func (service ClientService) DeleteClientByID(ctx context.Context, clientID string) error {
+	return service.clientRepository.DeleteByID(ctx, clientID)
+}

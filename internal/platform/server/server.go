@@ -71,6 +71,7 @@ func (server *Server) Run(ctx context.Context) error {
 func (server *Server) registerRoutes() {
 	server.engine.POST("/clients", clientsHandler.CreateHandler(server.clientService))
 	server.engine.GET("/clients/:id", clientsHandler.FindByIDHandler(server.clientService))
+	server.engine.DELETE("/clients/:id", clientsHandler.DeleteByIDHandler(server.clientService))
 }
 
 func serverContext(ctx context.Context) context.Context {

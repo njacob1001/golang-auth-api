@@ -75,3 +75,16 @@ func (repository *ClientRepository) FindByID(ctx context.Context, clientID strin
 
 	return client, nil
 }
+
+func (repository *ClientRepository) DeleteByID(ctx context.Context, clientID string) error {
+	sb := clientInfoSQLStruck.DeleteFrom(sqlClientTable)
+	query, args := sb.Where(sb.Equal("id", clientID)).Build()
+	ctxTimeout, cancel := context.WithTimeout(ctx, repository.dbTimeout)
+	defer cancel()
+	_, err := repository.db.ExecContext(ctxTimeout, query, args...)
+	if err != nil {
+		return fmt.Errorf("error tring to delete client: %v", err)
+	}
+
+	return nil
+}
