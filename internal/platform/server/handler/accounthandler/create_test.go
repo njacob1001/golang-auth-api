@@ -17,13 +17,14 @@ import (
 
 func TestCreateHandler(t *testing.T) {
 	clientRepository := new(storagemocks.ClientRepository)
-	clientRepository.On("Save", mock.Anything, mock.Anything).Return(nil)
+	clientRepository.On("Create", mock.Anything, mock.Anything).Return(nil)
+	accountRepository := new(storagemocks.AccountRepository)
 
-	createClientService := service.NewAccountService(clientRepository)
+	createClientService := service.NewAccountService(accountRepository, clientRepository)
 
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
-	r.POST("/clientsHandler", CreateHandler(createClientService))
+	r.POST("/clients", CreateHandler(createClientService))
 
 	t.Run("given and invalid request it return 400", func(t *testing.T) {
 		createClientReq := createRequest{
@@ -35,7 +36,7 @@ func TestCreateHandler(t *testing.T) {
 		// stop execution test if the condition fails
 		require.NoError(t, err) // comprobar que no exista error al marchalear el json
 
-		req, err := http.NewRequest(http.MethodPost, "/clientsHandler", bytes.NewBuffer(b))
+		req, err := http.NewRequest(http.MethodPost, "/clients", bytes.NewBuffer(b))
 		require.NoError(t, err) //  comprobar que no exista error al llamar el endpoint
 
 		rec := httptest.NewRecorder()
@@ -62,7 +63,7 @@ func TestCreateHandler(t *testing.T) {
 		// stop execution test if the condition fails
 		require.NoError(t, err) // comprobar que no exista error al marchalear el json
 
-		req, err := http.NewRequest(http.MethodPost, "/clientsHandler", bytes.NewBuffer(b))
+		req, err := http.NewRequest(http.MethodPost, "/clients", bytes.NewBuffer(b))
 		require.NoError(t, err) //  comprobar que no exista error al llamar el endpoint
 
 		rec := httptest.NewRecorder()
