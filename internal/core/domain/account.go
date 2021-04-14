@@ -4,12 +4,9 @@ import "rumm-api/kit/identifier"
 
 type Account struct {
 	id           string
+	accountType  string
 	identifier   string
 	password     string
-	createdAt    string
-	updatedAt    string
-	lastLogin    string
-	requestLogin bool
 }
 
 type AccountOption func(*Account) error
@@ -46,21 +43,21 @@ func WithAccountPass(password string) AccountOption {
 	}
 }
 
-func WithAccountDates(created, updated, login string) AccountOption {
+func WithAccountIdentifier(accIdentifier string) AccountOption {
 	return func(a *Account) error {
-		a.createdAt = created
-		a.updatedAt = updated
-		a.lastLogin = login
+		a.identifier = accIdentifier
 		return nil
 	}
 }
 
-func WithAccountLoginRequest() AccountOption {
+
+func WithAccountType(accountType string) AccountOption {
 	return func(a *Account) error {
-		a.requestLogin = true
+		a.accountType = accountType
 		return nil
 	}
 }
+
 
 func (a Account) ID() string {
 	return a.id
@@ -72,4 +69,8 @@ func (a Account) Identifier() string {
 
 func (a Account) Password() string {
 	return a.password
+}
+
+func (a Account) AccountType() string{
+	return a.accountType
 }

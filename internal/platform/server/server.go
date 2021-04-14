@@ -73,6 +73,9 @@ func (s *Server) registerRoutes() {
 	s.engine.GET("/clients/:id", accounthandler.FindByIDHandler(s.clientService))
 	s.engine.DELETE("/clients/:id", accounthandler.DeleteByIDHandler(s.clientService))
 	s.engine.PUT("/clients/:id", accounthandler.UpdateHandler(s.clientService))
+
+	s.engine.POST("/accounts", accounthandler.CreateAccountHandler(s.clientService))
+	s.engine.POST("/auth", accounthandler.ValidateAccountHandler(s.clientService))
 }
 
 func serverContext(ctx context.Context) context.Context {

@@ -20,7 +20,7 @@ type createRequest struct {
 	Cellphone string `json:"cellphone" binding:"required"`
 }
 
-func CreateHandler(clientService service.AccountService) gin.HandlerFunc {
+func CreateHandler(accountService service.AccountService) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var req createRequest
 		if err := ctx.BindJSON(&req); err != nil {
@@ -28,7 +28,7 @@ func CreateHandler(clientService service.AccountService) gin.HandlerFunc {
 			return
 		}
 
-		err := clientService.CreateClient(ctx, req.ID, req.Name, req.LastName, req.BirthDay.Format("2006-01-02"), req.Email, req.City, req.Address, req.Cellphone)
+		err := accountService.CreateClient(ctx, req.ID, req.Name, req.LastName, req.BirthDay.Format("2006-01-02"), req.Email, req.City, req.Address, req.Cellphone)
 
 		if err != nil {
 			switch {

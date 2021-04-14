@@ -7,13 +7,13 @@ import (
 )
 
 type AccountService struct {
-	clientRepository ports.ClientRepository
+	clientRepository  ports.ClientRepository
 	accountRepository ports.AccountRepository
 }
 
-func NewAccountService(accountRepository ports.AccountRepository,clientRepository ports.ClientRepository) AccountService {
+func NewAccountService(accountRepository ports.AccountRepository, clientRepository ports.ClientRepository) AccountService {
 	return AccountService{
-		clientRepository: clientRepository,
+		clientRepository:  clientRepository,
 		accountRepository: accountRepository,
 	}
 }
@@ -50,4 +50,20 @@ func (s AccountService) UpdateClientByID(ctx context.Context, uuid, name, lastNa
 		return err
 	}
 	return s.clientRepository.Update(ctx, uuid, client)
+}
+func (s AccountService) CreateAccount(ctx context.Context, id, identifier, password, accountType string) error {
+	account, err := domain.NewAccount(
+		domain.WithAccountID(id, identifier),
+		domain.WithAccountPass(password),
+		domain.WithAccountType(accountType))
+
+	if err != nil {
+		return err
+	}
+
+	return s.accountRepository.Create(ctx, account)
+}
+
+func (s AccountService) Authenticate(ctx context.Context, accIdentifier, password string) (domain.Account, error) {
+	return s.accountRepository.Authenticate(ctx, accIdentifier, password)
 }

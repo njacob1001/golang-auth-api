@@ -15,7 +15,8 @@ type ClientRepository interface {
 //go:generate mockery --case=snake --outpkg=storagemocks --output=../../../mocks/mockups --name=ClientRepository
 
 type AccountRepository interface {
-	Create(ctx context.Context, clientID string, account domain.Account) error
+	Create(ctx context.Context, account domain.Account) error
+	Authenticate(ctx context.Context, accIdentifier, password string) (domain.Account, error)
 }
 
 //go:generate mockery --case=snake --outpkg=storagemocks --output=../../../mocks/mockups --name=AccountRepository

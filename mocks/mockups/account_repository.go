@@ -14,13 +14,13 @@ type AccountRepository struct {
 	mock.Mock
 }
 
-// Create provides a mock function with given fields: ctx, clientID, account
-func (_m *AccountRepository) Create(ctx context.Context, clientID string, account domain.Account) error {
-	ret := _m.Called(ctx, clientID, account)
+// Create provides a mock function with given fields: ctx, account
+func (_m *AccountRepository) Create(ctx context.Context, account domain.Account) error {
+	ret := _m.Called(ctx, account)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, domain.Account) error); ok {
-		r0 = rf(ctx, clientID, account)
+	if rf, ok := ret.Get(0).(func(context.Context, domain.Account) error); ok {
+		r0 = rf(ctx, account)
 	} else {
 		r0 = ret.Error(0)
 	}
