@@ -45,12 +45,12 @@ func NewServer(ctx context.Context, options ...Option) (context.Context, Server,
 	return serverContext(ctx), server, nil
 }
 
-func (server *Server) Run(ctx context.Context) error {
-	log.Println("Server running on", server.httpAddress)
+func (s *Server) Run(ctx context.Context) error {
+	log.Println("Server running on", s.httpAddress)
 
 	srv := &http.Server{
-		Addr:    server.httpAddress,
-		Handler: server.engine,
+		Addr:    s.httpAddress,
+		Handler: s.engine,
 	}
 
 	go func() {
@@ -61,17 +61,18 @@ func (server *Server) Run(ctx context.Context) error {
 
 	<-ctx.Done()
 
-	ctxShutDown, cancel := context.WithTimeout(context.Background(), server.shutdownTimeout)
+	ctxShutDown, cancel := context.WithTimeout(context.Background(), s.shutdownTimeout)
 	defer cancel()
 
 	return srv.Shutdown(ctxShutDown)
 
 }
 
-func (server *Server) registerRoutes() {
-	server.engine.POST("/clients", accounthandler.CreateHandler(server.clientService))
-	server.engine.GET("/clients/:id", accounthandler.FindByIDHandler(server.clientService))
-	server.engine.DELETE("/clients/:id", accounthandler.DeleteByIDHandler(server.clientService))
+func (s *Server) registerRoutes() {
+	s.engine.POST("/clients", accounthandler.CreateHandler(s.clientService))
+	s.engine.GET("/clients/:id", accounthandler.FindByIDHandler(s.clientService))
+	s.engine.DELETE("/clients/:id", accounthandler.DeleteByIDHandler(s.clientService))
+	s.engine.PUT("/clients/:id", accounthandler.UpdateHandler(s.clientService))
 }
 
 func serverContext(ctx context.Context) context.Context {

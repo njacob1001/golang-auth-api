@@ -6,13 +6,16 @@ import (
 )
 
 type ClientRepository interface {
-	Save(ctx context.Context, client domain.Client) error
-	FindByID(ctx context.Context, clientID string) (domain.Client, error)
-	DeleteByID(ctx context.Context, clientID string) error
+	Create(ctx context.Context, client domain.Client) error
+	Find(ctx context.Context, clientID string) (domain.Client, error)
+	Delete(ctx context.Context, clientID string) error
+	Update(ctx context.Context, clientID string, client domain.Client) error
 }
+
 //go:generate mockery --case=snake --outpkg=storagemocks --output=../../../mocks/mockups --name=ClientRepository
 
 type AccountRepository interface {
 	Create(ctx context.Context, clientID string, account domain.Account) error
 }
+
 //go:generate mockery --case=snake --outpkg=storagemocks --output=../../../mocks/mockups --name=AccountRepository

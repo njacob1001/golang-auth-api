@@ -27,3 +27,13 @@ type clientInfo struct {
 	Address   string `db:"address"`
 	Cellphone string `db:"cellphone"`
 }
+
+type sqlUpdateClient struct {
+	Name      string `db:"name"`
+	LastName  string `db:"last_name"`
+	Birthday  string `db:"birth_day"`
+	Email     string `db:"email"`
+	City      string `db:"city"`
+	Address   string `db:"address"`
+	Cellphone string `db:"cellphone"`
+}

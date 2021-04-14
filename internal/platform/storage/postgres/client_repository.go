@@ -11,6 +11,7 @@ import (
 
 var clientSQLStruck = sqlbuilder.NewStruct(new(sqlClient)).For(sqlbuilder.PostgreSQL)
 var clientInfoSQLStruck = sqlbuilder.NewStruct(new(clientInfo)).For(sqlbuilder.PostgreSQL)
+var updateClientSQLStruck = sqlbuilder.NewStruct(new(sqlUpdateClient)).For(sqlbuilder.PostgreSQL)
 
 type ClientRepository struct {
 	db        *sql.DB
@@ -24,7 +25,7 @@ func NewClientRepository(db *sql.DB, dbTimeout time.Duration) *ClientRepository 
 	}
 }
 
-func (repository *ClientRepository) Save(ctx context.Context, client domain.Client) error {
+func (r *ClientRepository) Create(ctx context.Context, client domain.Client) error {
 	query, args := clientSQLStruck.InsertInto(sqlClientTable, sqlClient{
 		ID:        client.ID(),
 		Name:      client.Name(),
@@ -36,10 +37,10 @@ func (repository *ClientRepository) Save(ctx context.Context, client domain.Clie
 		Cellphone: client.Cellphone(),
 	}).Build()
 
-	ctxTimeout, cancel := context.WithTimeout(ctx, repository.dbTimeout)
+	ctxTimeout, cancel := context.WithTimeout(ctx, r.dbTimeout)
 	defer cancel()
 
-	_, err := repository.db.ExecContext(ctxTimeout, query, args...)
+	_, err := r.db.ExecContext(ctxTimeout, query, args...)
 
 	if err != nil {
 		return fmt.Errorf("error trying to persist client on database: %v", err)
@@ -48,15 +49,15 @@ func (repository *ClientRepository) Save(ctx context.Context, client domain.Clie
 	return nil
 }
 
-func (repository *ClientRepository) FindByID(ctx context.Context, clientID string) (domain.Client, error) {
+func (r *ClientRepository) Find(ctx context.Context, clientID string) (domain.Client, error) {
 
 	sb := clientInfoSQLStruck.SelectFrom(sqlClientTable)
 	query, args := sb.Where(sb.Equal("id", clientID)).Build()
 
-	ctxTimeout, cancel := context.WithTimeout(ctx, repository.dbTimeout)
+	ctxTimeout, cancel := context.WithTimeout(ctx, r.dbTimeout)
 	defer cancel()
 
-	row := repository.db.QueryRowContext(ctxTimeout, query, args...)
+	row := r.db.QueryRowContext(ctxTimeout, query, args...)
 
 	var dbClient clientInfo
 
@@ -76,15 +77,39 @@ func (repository *ClientRepository) FindByID(ctx context.Context, clientID strin
 	return client, nil
 }
 
-func (repository *ClientRepository) DeleteByID(ctx context.Context, clientID string) error {
+func (r *ClientRepository) Delete(ctx context.Context, clientID string) error {
 	sb := clientInfoSQLStruck.DeleteFrom(sqlClientTable)
 	query, args := sb.Where(sb.Equal("id", clientID)).Build()
-	ctxTimeout, cancel := context.WithTimeout(ctx, repository.dbTimeout)
+	ctxTimeout, cancel := context.WithTimeout(ctx, r.dbTimeout)
 	defer cancel()
-	_, err := repository.db.ExecContext(ctxTimeout, query, args...)
+	_, err := r.db.ExecContext(ctxTimeout, query, args...)
 	if err != nil {
-		return fmt.Errorf("error tring to delete client: %v", err)
+		return fmt.Errorf("error trying to delete client: %v", err)
 	}
 
+	return nil
+}
+
+func (r *ClientRepository) Update(ctx context.Context, clientID string, client domain.Client) error {
+
+	newClient := sqlUpdateClient{
+		Name:      client.Name(),
+		LastName:  client.LastName(),
+		Birthday:  client.BirthDay(),
+		Cellphone: client.Cellphone(),
+		Address:   client.Address(),
+		Email:     client.Email(),
+		City:      client.City(),
+	}
+	sb := updateClientSQLStruck.Update(sqlClientTable, newClient)
+	query, args := sb.Where(sb.Equal("id", clientID)).Build()
+
+	ctxTimeout, cancel := context.WithTimeout(ctx, r.dbTimeout)
+	defer cancel()
+
+	_, err := r.db.ExecContext(ctxTimeout, query, args...)
+	if err != nil {
+		return fmt.Errorf("error trying to update client: %v", err)
+	}
 	return nil
 }

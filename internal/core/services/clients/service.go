@@ -18,7 +18,7 @@ func NewAccountService(accountRepository ports.AccountRepository,clientRepositor
 	}
 }
 
-func (service AccountService) CreateClient(ctx context.Context, uuid, name, lastName, birthday, email, city, address, cellphone string) error {
+func (s AccountService) CreateClient(ctx context.Context, uuid, name, lastName, birthday, email, city, address, cellphone string) error {
 	client, err := domain.NewClient(
 		uuid,
 		domain.WithAccount(email, cellphone),
@@ -28,13 +28,26 @@ func (service AccountService) CreateClient(ctx context.Context, uuid, name, last
 	if err != nil {
 		return err
 	}
-	return service.clientRepository.Save(ctx, client)
+	return s.clientRepository.Create(ctx, client)
 }
 
-func (service AccountService) FindClientByID(ctx context.Context, id string) (domain.Client, error) {
-	return service.clientRepository.FindByID(ctx, id)
+func (s AccountService) FindClientByID(ctx context.Context, id string) (domain.Client, error) {
+	return s.clientRepository.Find(ctx, id)
 }
 
-func (service AccountService) DeleteClientByID(ctx context.Context, clientID string) error {
-	return service.clientRepository.DeleteByID(ctx, clientID)
+func (s AccountService) DeleteClientByID(ctx context.Context, clientID string) error {
+	return s.clientRepository.Delete(ctx, clientID)
+}
+
+func (s AccountService) UpdateClientByID(ctx context.Context, uuid, name, lastName, birthday, email, city, address, cellphone string) error {
+	client, err := domain.NewClient(
+		uuid,
+		domain.WithAccount(email, cellphone),
+		domain.WithLocation(city, address),
+		domain.WithPersonalInformation(name, lastName, birthday),
+	)
+	if err != nil {
+		return err
+	}
+	return s.clientRepository.Update(ctx, uuid, client)
 }
