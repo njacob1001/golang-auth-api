@@ -9,7 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"rumm-api/internal/core/services/clients"
-	"rumm-api/internal/platform/server/handler/clientsHandler"
+	"rumm-api/internal/platform/server/handler/accounthandler"
 	"time"
 )
 
@@ -22,7 +22,7 @@ type Server struct {
 	developMode     bool
 
 	//deps
-	clientService service.ClientService
+	clientService service.AccountService
 }
 
 func NewServer(ctx context.Context, options ...Option) (context.Context, Server, error) {
@@ -69,9 +69,9 @@ func (server *Server) Run(ctx context.Context) error {
 }
 
 func (server *Server) registerRoutes() {
-	server.engine.POST("/clients", clientsHandler.CreateHandler(server.clientService))
-	server.engine.GET("/clients/:id", clientsHandler.FindByIDHandler(server.clientService))
-	server.engine.DELETE("/clients/:id", clientsHandler.DeleteByIDHandler(server.clientService))
+	server.engine.POST("/clients", accounthandler.CreateHandler(server.clientService))
+	server.engine.GET("/clients/:id", accounthandler.FindByIDHandler(server.clientService))
+	server.engine.DELETE("/clients/:id", accounthandler.DeleteByIDHandler(server.clientService))
 }
 
 func serverContext(ctx context.Context) context.Context {
@@ -100,7 +100,7 @@ func WithTimeout(timeout time.Duration) Option {
 	}
 }
 
-func WithClientService(clientService service.ClientService) Option {
+func WithClientService(clientService service.AccountService) Option {
 	return func(server *Server) error {
 		server.clientService = clientService
 		return nil

@@ -11,3 +11,8 @@ type ClientRepository interface {
 	DeleteByID(ctx context.Context, clientID string) error
 }
 //go:generate mockery --case=snake --outpkg=storagemocks --output=../../../mocks/mockups --name=ClientRepository
+
+type AccountRepository interface {
+	Create(ctx context.Context, clientID string, account domain.Account) error
+}
+//go:generate mockery --case=snake --outpkg=storagemocks --output=../../../mocks/mockups --name=AccountRepository

@@ -15,9 +15,9 @@ type Client struct {
 	cellphone string
 }
 
-type Option func(*Client) error
+type ClientOption func(*Client) error
 
-func NewClient(uuid string, options ...Option) (Client, error) {
+func NewClient(uuid string, options ...ClientOption) (Client, error) {
 
 	safeUUID, err := identifier.ValidateIdentifier(uuid)
 	if err != nil {
@@ -36,7 +36,7 @@ func NewClient(uuid string, options ...Option) (Client, error) {
 	return client, nil
 }
 
-func WithAccount(email, cellphone string) Option {
+func WithAccount(email, cellphone string) ClientOption {
 	return func(client *Client) error {
 		client.email = email
 		client.cellphone = cellphone
@@ -44,7 +44,7 @@ func WithAccount(email, cellphone string) Option {
 	}
 }
 
-func WithPersonalInformation(name, lastName, birthDay string) Option {
+func WithPersonalInformation(name, lastName, birthDay string) ClientOption {
 	return func(client *Client) error {
 		client.name = name
 		client.lastName = lastName
@@ -53,7 +53,7 @@ func WithPersonalInformation(name, lastName, birthDay string) Option {
 	}
 }
 
-func WithLocation(city, address string) Option {
+func WithLocation(city, address string) ClientOption {
 	return func(client *Client) error {
 		client.city = city
 		client.address = address

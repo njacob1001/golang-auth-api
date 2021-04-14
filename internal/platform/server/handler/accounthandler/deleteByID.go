@@ -1,4 +1,4 @@
-package clientsHandler
+package accounthandler
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 )
 
 
-func DeleteByIDHandler(clientService service.ClientService) gin.HandlerFunc {
+func DeleteByIDHandler(clientService service.AccountService) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var request clientRequest
 		if err := ctx.ShouldBindUri(&request); err != nil {

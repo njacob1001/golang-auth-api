@@ -1,4 +1,4 @@
-package clientsHandler
+package accounthandler
 
 import (
 	"bytes"
@@ -19,7 +19,7 @@ func TestCreateHandler(t *testing.T) {
 	clientRepository := new(storagemocks.ClientRepository)
 	clientRepository.On("Save", mock.Anything, mock.Anything).Return(nil)
 
-	createClientService := service.NewClientService(clientRepository)
+	createClientService := service.NewAccountService(clientRepository)
 
 	gin.SetMode(gin.TestMode)
 	r := gin.New()

@@ -8,9 +8,9 @@ import (
 	"github.com/kelseyhightower/envconfig"
 	_ "github.com/lib/pq"
 	"rumm-api/internal/core/services/clients"
+	"rumm-api/internal/platform/storage/postgres"
 
 	"rumm-api/internal/platform/server"
-	"rumm-api/internal/platform/storage/postgres"
 	"time"
 )
 
@@ -31,7 +31,8 @@ func Run() error {
 	}
 
 	clientRepository := postgres.NewClientRepository(db, cfg.DbTimeout)
-	clientService := service.NewClientService(clientRepository)
+	accountRepository := postgres.NewAccountRepository(db, cfg.DbTimeout)
+	clientService := service.NewAccountService(accountRepository, clientRepository)
 
 	isDevelopMode := !(cfg.ServerMode == "release")
 

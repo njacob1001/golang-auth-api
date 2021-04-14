@@ -1,4 +1,4 @@
-package clientsHandler
+package accounthandler
 
 import (
 	"fmt"
@@ -23,7 +23,7 @@ type clientResponse struct {
 	Cellphone string `json:"cellphone"`
 }
 
-func FindByIDHandler(clientService service.ClientService) gin.HandlerFunc {
+func FindByIDHandler(clientService service.AccountService) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var request clientRequest
 		if err := ctx.ShouldBindUri(&request); err != nil {

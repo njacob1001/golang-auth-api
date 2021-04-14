@@ -24,7 +24,7 @@ func Test_ClientService_CreateClient_RepositoryError(t *testing.T) {
 	clientRepositoryMock := new(storagemocks.ClientRepository)
 	clientRepositoryMock.On("Save", mock.Anything, client).Return(errors.New("something unexpected happened"))
 
-	clientService := NewClientService(clientRepositoryMock)
+	clientService := NewAccountService(clientRepositoryMock)
 
 	err = clientService.CreateClient(context.Background(), UUID, Name, LastName, Birthday, Email, City, Address, Cellphone)
 
@@ -44,7 +44,7 @@ func Test_ClientService_CreateClient_Succeed(t *testing.T) {
 	clientRepositoryMock := new(storagemocks.ClientRepository)
 	clientRepositoryMock.On("Save", mock.Anything, course).Return(nil)
 
-	clientService := NewClientService(clientRepositoryMock)
+	clientService := NewAccountService(clientRepositoryMock)
 
 	err = clientService.CreateClient(context.Background(), UUID, Name, LastName, Birthday, Email, City, Address, Cellphone)
 

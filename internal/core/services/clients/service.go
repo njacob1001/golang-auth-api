@@ -6,17 +6,19 @@ import (
 	"rumm-api/internal/core/ports"
 )
 
-type ClientService struct {
+type AccountService struct {
 	clientRepository ports.ClientRepository
+	accountRepository ports.AccountRepository
 }
 
-func NewClientService(clientRepository ports.ClientRepository) ClientService {
-	return ClientService{
+func NewAccountService(accountRepository ports.AccountRepository,clientRepository ports.ClientRepository) AccountService {
+	return AccountService{
 		clientRepository: clientRepository,
+		accountRepository: accountRepository,
 	}
 }
 
-func (service ClientService) CreateClient(ctx context.Context, uuid, name, lastName, birthday, email, city, address, cellphone string) error {
+func (service AccountService) CreateClient(ctx context.Context, uuid, name, lastName, birthday, email, city, address, cellphone string) error {
 	client, err := domain.NewClient(
 		uuid,
 		domain.WithAccount(email, cellphone),
@@ -29,10 +31,10 @@ func (service ClientService) CreateClient(ctx context.Context, uuid, name, lastN
 	return service.clientRepository.Save(ctx, client)
 }
 
-func (service ClientService) FindClientByID(ctx context.Context, id string) (domain.Client, error) {
+func (service AccountService) FindClientByID(ctx context.Context, id string) (domain.Client, error) {
 	return service.clientRepository.FindByID(ctx, id)
 }
 
-func (service ClientService) DeleteClientByID(ctx context.Context, clientID string) error {
+func (service AccountService) DeleteClientByID(ctx context.Context, clientID string) error {
 	return service.clientRepository.DeleteByID(ctx, clientID)
 }
