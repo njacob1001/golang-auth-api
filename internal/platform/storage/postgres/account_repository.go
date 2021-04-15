@@ -4,23 +4,29 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/go-redis/redis/v8"
 	"github.com/huandu/go-sqlbuilder"
 	"rumm-api/internal/core/domain"
+	"rumm-api/kit/security"
 	"time"
 )
 
 type AccountRepository struct {
 	db        *sql.DB
 	dbTimeout time.Duration
+	jwtSecret string
+	rdb       *redis.Client
 }
 
 var accountSQLStruck = sqlbuilder.NewStruct(new(sqlAccount)).For(sqlbuilder.PostgreSQL)
 var accountInfoSQLStruck = sqlbuilder.NewStruct(new(accountInfo)).For(sqlbuilder.PostgreSQL)
 
-func NewAccountRepository(db *sql.DB, dbTimeout time.Duration) *AccountRepository {
+func NewAccountRepository(db *sql.DB, dbTimeout time.Duration, jwtSecret string, rdb *redis.Client) *AccountRepository {
 	return &AccountRepository{
 		db:        db,
 		dbTimeout: dbTimeout,
+		jwtSecret: jwtSecret,
+		rdb:       rdb,
 	}
 }
 
@@ -57,13 +63,13 @@ func (r *AccountRepository) Authenticate(ctx context.Context, accIdentifier, pas
 		return domain.Account{}, fmt.Errorf("error trying to find account on database, account doesn't exist: %v", err)
 	}
 
-	account, err :=  domain.NewAccount(
+	account, err := domain.NewAccount(
 		domain.WithAccountID(acc.ID),
 		domain.WithAccountIdentifier(acc.Identifier),
 		domain.WithAccountHashedPass(acc.Password),
 		domain.WithAccountType(acc.AccountID))
 	if err != nil {
-		return domain.Account{},err
+		return domain.Account{}, err
 	}
 
 	isValid, err := account.ValidatePassword(password)
@@ -72,8 +78,26 @@ func (r *AccountRepository) Authenticate(ctx context.Context, accIdentifier, pas
 		return domain.Account{}, err
 	}
 	if isValid {
+		td, err := security.CreateToken(r.jwtSecret, account.ID())
+		if err != nil {
+			return domain.Account{}, err
+		}
+		at := time.Unix(td.AtExpires,0)
+		rt := time.Unix(td.RtExpires, 0)
+		now := time.Now()
+
+		errAccess := r.rdb.Set(ctxTimeout, td.AccessUuid, account.ID(), at.Sub(now)).Err()
+		if errAccess != nil {
+			return domain.Account{}, errAccess
+		}
+
+		errRefresh := r.rdb.Set(ctxTimeout, td.RefreshUuid, account.ID(), rt.Sub(now)).Err()
+		if errRefresh != nil {
+			return domain.Account{}, errRefresh
+		}
+
 		return account, nil
 	}
 
-	return domain.Account{}, nil
+	return domain.Account{}, domain.ErrAccountValidation
 }

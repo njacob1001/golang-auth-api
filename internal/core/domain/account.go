@@ -3,8 +3,8 @@ package domain
 import (
 	"errors"
 	"fmt"
-	"rumm-api/kit/encryption"
 	"rumm-api/kit/identifier"
+	"rumm-api/kit/security"
 )
 
 type Account struct {
@@ -45,7 +45,7 @@ func WithAccountID(id string) AccountOption {
 
 func WithAccountPass(password string) AccountOption {
 	return func(a *Account) error {
-		hashPassword, err := encryption.GetHash(password)
+		hashPassword, err := security.GetHash(password)
 		if err != nil {
 			return fmt.Errorf("%w", ErrInvalidClientUUID)
 		}
@@ -97,7 +97,7 @@ func (a Account) AccountType() string{
 }
 
 func (a Account) ValidatePassword(password string) (bool, error) {
-	isValid, err := encryption.ValidatePassword(a.password, password)
+	isValid, err := security.ValidatePassword(a.password, password)
 
 	if err != nil {
 		return false, fmt.Errorf("%w", ErrAccountValidation)

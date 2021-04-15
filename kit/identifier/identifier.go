@@ -22,3 +22,8 @@ func ValidateIdentifier(value string) (Identifier, error) {
 		String: v.String(),
 	}, nil
 }
+
+func CreateUUID() string {
+	v := uuid.New()
+	return v.String()
+}

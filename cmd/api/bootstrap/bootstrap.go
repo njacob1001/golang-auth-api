@@ -4,13 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/go-redis/redis/v8"
 	"github.com/huandu/go-sqlbuilder"
 	"github.com/kelseyhightower/envconfig"
 	_ "github.com/lib/pq"
 	"rumm-api/internal/core/services/clients"
-	"rumm-api/internal/platform/storage/postgres"
-
 	"rumm-api/internal/platform/server"
+	"rumm-api/internal/platform/storage/postgres"
 	"time"
 )
 
@@ -24,14 +24,20 @@ func Run() error {
 	sqlbuilder.DefaultFlavor = sqlbuilder.PostgreSQL
 
 	postgresURI := fmt.Sprintf("postgres://%v:%v@%v:%v/%v?sslmode=disable", cfg.DbUser, cfg.DbPass, cfg.DbHost, cfg.DbPort, cfg.DbName)
-
 	db, err := sql.Open("postgres", postgresURI)
 	if err != nil {
 		return err
 	}
 
+	redisURI := fmt.Sprintf("%v:%v", cfg.RdbHost, cfg.RdbPort)
+	rdb := redis.NewClient(&redis.Options{
+		Addr: redisURI,
+		Password: cfg.RdbPassword,
+		DB: cfg.RdbIndex,
+	})
+
 	clientRepository := postgres.NewClientRepository(db, cfg.DbTimeout)
-	accountRepository := postgres.NewAccountRepository(db, cfg.DbTimeout)
+	accountRepository := postgres.NewAccountRepository(db, cfg.DbTimeout, cfg.JwtSecret, rdb)
 	clientService := accountservice.NewAccountService(accountRepository, clientRepository)
 
 	isDevelopMode := !(cfg.ServerMode == "release")
@@ -63,4 +69,13 @@ type config struct {
 	DbName     string        `required:"true"`
 	DbTimeout  time.Duration `default:"5s"`
 	ServerMode string        `default:"develop"`
+
+	// authentication
+	JwtSecret  string        `required:"true"`
+
+	// Redis database
+	RdbIndex int `default:"0"`
+	RdbPassword string `default:""`
+	RdbHost string `default:"0.0.0.0"`
+	RdbPort uint `default:"6379"`
 }
