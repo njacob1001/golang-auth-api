@@ -19,7 +19,7 @@ type clientResponse struct {
 	Cellphone string `json:"cellphone"`
 }
 
-func FindByIDHandler(clientService service.AccountService) http.HandlerFunc {
+func FindByIDHandler(clientService accountservice.AccountService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 

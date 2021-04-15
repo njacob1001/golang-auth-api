@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	httpSwagger "github.com/swaggo/http-swagger"
 	"log"
 	"net/http"
 	"os"
@@ -23,11 +24,13 @@ type Server struct {
 	developMode     bool
 
 	//deps
-	clientService service.AccountService
+	clientService accountservice.AccountService
 }
 
 func NewServer(ctx context.Context, options ...Option) (context.Context, Server, error) {
 	r := chi.NewRouter()
+	r.Use(middleware.Recoverer)
+
 	server := Server{
 		router: r,
 	}
@@ -42,6 +45,7 @@ func NewServer(ctx context.Context, options ...Option) (context.Context, Server,
 	if server.developMode {
 		server.router.Use(middleware.Logger)
 	}
+	server.router.Mount("/swagger", httpSwagger.WrapHandler)
 
 	server.registerRoutes()
 	return serverContext(ctx), server, nil
@@ -106,7 +110,7 @@ func WithTimeout(timeout time.Duration) Option {
 	}
 }
 
-func WithClientService(clientService service.AccountService) Option {
+func WithClientService(clientService accountservice.AccountService) Option {
 	return func(server *Server) error {
 		server.clientService = clientService
 		return nil

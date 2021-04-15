@@ -58,7 +58,9 @@ func (r *AccountRepository) Authenticate(ctx context.Context, accIdentifier, pas
 	}
 
 	account, err :=  domain.NewAccount(
-		domain.WithAccountID(acc.ID, acc.Identifier),
+		domain.WithAccountID(acc.ID),
+		domain.WithAccountIdentifier(acc.Identifier),
+		domain.WithAccountHashedPass(acc.Password),
 		domain.WithAccountType(acc.AccountID))
 	if err != nil {
 		return domain.Account{},err

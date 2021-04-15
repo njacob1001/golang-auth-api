@@ -1,4 +1,4 @@
-package service
+package accountservice
 
 import (
 	"context"
@@ -53,8 +53,9 @@ func (s AccountService) UpdateClientByID(ctx context.Context, uuid, name, lastNa
 }
 func (s AccountService) CreateAccount(ctx context.Context, id, identifier, password, accountType string) error {
 	account, err := domain.NewAccount(
-		domain.WithAccountID(id, identifier),
+		domain.WithAccountID(id),
 		domain.WithAccountPass(password),
+		domain.WithAccountIdentifier(identifier),
 		domain.WithAccountType(accountType))
 
 	if err != nil {

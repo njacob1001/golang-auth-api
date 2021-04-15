@@ -19,7 +19,7 @@ type createRequest struct {
 	Cellphone string `json:"cellphone"`
 }
 
-func CreateHandler(accountService service.AccountService) http.HandlerFunc {
+func CreateHandler(accountService accountservice.AccountService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		var req createRequest

@@ -32,14 +32,13 @@ func NewAccount(options ...AccountOption) (Account, error) {
 
 }
 
-func WithAccountID(id, accIdentifier string) AccountOption {
+func WithAccountID(id string) AccountOption {
 	return func(a *Account) error {
 		safeUUID, err := identifier.ValidateIdentifier(id)
 		if err != nil {
 			return err
 		}
 		a.id = safeUUID.String
-		a.identifier = accIdentifier
 		return nil
 	}
 }
@@ -51,6 +50,16 @@ func WithAccountPass(password string) AccountOption {
 			return fmt.Errorf("%w", ErrInvalidClientUUID)
 		}
 		a.password = hashPassword
+		return nil
+	}
+}
+
+func WithAccountHashedPass(password string) AccountOption {
+	return func(a *Account) error {
+		if password == "" {
+			return ErrInvalidClientUUID
+		}
+		a.password = password
 		return nil
 	}
 }
@@ -95,6 +104,4 @@ func (a Account) ValidatePassword(password string) (bool, error) {
 	}
 
 	return isValid, nil
-
-
 }

@@ -21,7 +21,7 @@ func TestCreateHandler(t *testing.T) {
 	clientRepository.On("Create", mock.Anything, mock.Anything).Return(nil)
 	accountRepository := new(storagemocks.AccountRepository)
 
-	createClientService := service.NewAccountService(accountRepository, clientRepository)
+	createClientService := accountservice.NewAccountService(accountRepository, clientRepository)
 
 	r := chi.NewRouter()
 	r.Use(middleware.GetHead)
