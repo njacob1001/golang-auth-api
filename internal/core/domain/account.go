@@ -1,6 +1,11 @@
 package domain
 
-import "rumm-api/kit/identifier"
+import (
+	"errors"
+	"fmt"
+	"rumm-api/kit/encryption"
+	"rumm-api/kit/identifier"
+)
 
 type Account struct {
 	id           string
@@ -8,6 +13,9 @@ type Account struct {
 	identifier   string
 	password     string
 }
+
+var ErrInvalidClientUUID = errors.New("invalid password")
+var ErrAccountValidation = errors.New("account validation error")
 
 type AccountOption func(*Account) error
 
@@ -38,7 +46,11 @@ func WithAccountID(id, accIdentifier string) AccountOption {
 
 func WithAccountPass(password string) AccountOption {
 	return func(a *Account) error {
-		a.password = password
+		hashPassword, err := encryption.GetHash(password)
+		if err != nil {
+			return fmt.Errorf("%w", ErrInvalidClientUUID)
+		}
+		a.password = hashPassword
 		return nil
 	}
 }
@@ -63,14 +75,26 @@ func (a Account) ID() string {
 	return a.id
 }
 
-func (a Account) Identifier() string {
-	return a.identifier
-}
-
 func (a Account) Password() string {
 	return a.password
 }
 
+func (a Account) Identifier() string {
+	return a.identifier
+}
+
 func (a Account) AccountType() string{
 	return a.accountType
+}
+
+func (a Account) ValidatePassword(password string) (bool, error) {
+	isValid, err := encryption.ValidatePassword(a.password, password)
+
+	if err != nil {
+		return false, fmt.Errorf("%w", ErrAccountValidation)
+	}
+
+	return isValid, nil
+
+
 }
