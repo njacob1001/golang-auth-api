@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	httpSwagger "github.com/swaggo/http-swagger"
 	"log"
 	"net/http"
 	"os"
@@ -45,7 +44,6 @@ func NewServer(ctx context.Context, options ...Option) (context.Context, Server,
 	if server.developMode {
 		server.router.Use(middleware.Logger)
 	}
-	server.router.Mount("/swagger", httpSwagger.WrapHandler)
 
 	server.registerRoutes()
 	return serverContext(ctx), server, nil
