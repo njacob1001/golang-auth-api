@@ -14,6 +14,27 @@ type AccountRepository struct {
 	mock.Mock
 }
 
+// Authenticate provides a mock function with given fields: ctx, accIdentifier, password
+func (_m *AccountRepository) Authenticate(ctx context.Context, accIdentifier string, password string) (domain.Account, error) {
+	ret := _m.Called(ctx, accIdentifier, password)
+
+	var r0 domain.Account
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) domain.Account); ok {
+		r0 = rf(ctx, accIdentifier, password)
+	} else {
+		r0 = ret.Get(0).(domain.Account)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = rf(ctx, accIdentifier, password)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Create provides a mock function with given fields: ctx, account
 func (_m *AccountRepository) Create(ctx context.Context, account domain.Account) error {
 	ret := _m.Called(ctx, account)

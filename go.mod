@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.0
-	github.com/gin-gonic/gin v1.6.3
+	github.com/go-chi/chi/v5 v5.0.2
 	github.com/google/uuid v1.2.0
 	github.com/huandu/go-assert v1.1.5
 	github.com/huandu/go-sqlbuilder v1.12.1

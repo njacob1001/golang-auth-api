@@ -8,36 +8,37 @@ import (
 	"rumm-api/kit/identifier"
 )
 
-type createAccountRequest struct {
-	ID          string `json:"id" binding:"required"`
-	Password    string `json:"password" binding:"required"`
-	Identifier  string `json:"identifier" binding:"required"`
-	AccountType string `json:"accountType" binding:"required"`
+type validateAccountRequest struct {
+	Password   string `json:"password" binding:"required"`
+	Identifier string `json:"identifier" binding:"required"`
 }
 
-func CreateAccountHandler(accountService service.AccountService) http.HandlerFunc {
+func ValidateAccountHandler(accountService service.AccountService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		var req createAccountRequest
+
+		var req validateAccountRequest
 
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
 		}
 
-		err := accountService.CreateAccount(ctx, req.ID, req.Identifier, req.Password, req.AccountType)
+		_, err := accountService.Authenticate(ctx, req.Identifier, req.Password)
 
 		if err != nil {
 			switch {
 			case errors.Is(err, identifier.ErrInvalidClientUUID):
 				http.Error(w, err.Error(), http.StatusBadRequest)
-
 				return
 			default:
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 		}
-		w.WriteHeader(http.StatusCreated)
+
+		w.WriteHeader(http.StatusOK)
+		return
 
 	}
 }

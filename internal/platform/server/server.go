@@ -3,7 +3,8 @@ package server
 import (
 	"context"
 	"fmt"
-	"github.com/gin-gonic/gin"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"log"
 	"net/http"
 	"os"
@@ -17,7 +18,7 @@ type Option func(*Server) error
 
 type Server struct {
 	httpAddress     string
-	engine          *gin.Engine
+	router          *chi.Mux
 	shutdownTimeout time.Duration
 	developMode     bool
 
@@ -26,8 +27,9 @@ type Server struct {
 }
 
 func NewServer(ctx context.Context, options ...Option) (context.Context, Server, error) {
+	r := chi.NewRouter()
 	server := Server{
-		engine: gin.New(),
+		router: r,
 	}
 	for _, option := range options {
 		err := option(&server)
@@ -35,10 +37,10 @@ func NewServer(ctx context.Context, options ...Option) (context.Context, Server,
 			return nil, server, err
 		}
 	}
-	server.engine.Use(gin.Recovery())
+	server.router.Use(middleware.Recoverer)
 
 	if server.developMode {
-		server.engine.Use(gin.Logger())
+		server.router.Use(middleware.Logger)
 	}
 
 	server.registerRoutes()
@@ -50,7 +52,7 @@ func (s *Server) Run(ctx context.Context) error {
 
 	srv := &http.Server{
 		Addr:    s.httpAddress,
-		Handler: s.engine,
+		Handler: s.router,
 	}
 
 	go func() {
@@ -69,13 +71,13 @@ func (s *Server) Run(ctx context.Context) error {
 }
 
 func (s *Server) registerRoutes() {
-	s.engine.POST("/clients", accounthandler.CreateHandler(s.clientService))
-	s.engine.GET("/clients/:id", accounthandler.FindByIDHandler(s.clientService))
-	s.engine.DELETE("/clients/:id", accounthandler.DeleteByIDHandler(s.clientService))
-	s.engine.PUT("/clients/:id", accounthandler.UpdateHandler(s.clientService))
+	s.router.Post("/clients", accounthandler.CreateHandler(s.clientService))
+	s.router.Get("/clients/{id}", accounthandler.FindByIDHandler(s.clientService))
+	s.router.Delete("/clients/{id}", accounthandler.DeleteByIDHandler(s.clientService))
+	s.router.Put("/clients/{id}", accounthandler.UpdateHandler(s.clientService))
 
-	s.engine.POST("/accounts", accounthandler.CreateAccountHandler(s.clientService))
-	s.engine.POST("/auth", accounthandler.ValidateAccountHandler(s.clientService))
+	s.router.Post("/accounts", accounthandler.CreateAccountHandler(s.clientService))
+	s.router.Post("/auth", accounthandler.ValidateAccountHandler(s.clientService))
 }
 
 func serverContext(ctx context.Context) context.Context {

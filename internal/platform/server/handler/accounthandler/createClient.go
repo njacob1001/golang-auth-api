@@ -3,14 +3,12 @@ package accounthandler
 import (
 	"encoding/json"
 	"errors"
-	"github.com/go-chi/chi/v5"
 	"net/http"
-	service "rumm-api/internal/core/services/clients"
+	"rumm-api/internal/core/services/clients"
 	"rumm-api/kit/identifier"
 )
 
-
-type updateRequest struct {
+type createRequest struct {
 	ID        string `json:"id"`
 	Name      string `json:"name"`
 	LastName  string `json:"lastName"`
@@ -21,19 +19,17 @@ type updateRequest struct {
 	Cellphone string `json:"cellphone"`
 }
 
-func UpdateHandler(accountService service.AccountService) http.HandlerFunc {
+func CreateHandler(accountService service.AccountService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		var req updateRequest
-
+		var req createRequest
 
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
 		}
 
-		clientID := chi.URLParam(r, "id")
-
-		err := accountService.UpdateClientByID(ctx, clientID, req.Name, req.LastName, req.BirthDay, req.Email, req.City, req.Address, req.Cellphone)
+		err := accountService.CreateClient(ctx, req.ID, req.Name, req.LastName, req.BirthDay, req.Email, req.City, req.Address, req.Cellphone)
 
 		if err != nil {
 			switch {
@@ -45,8 +41,8 @@ func UpdateHandler(accountService service.AccountService) http.HandlerFunc {
 				return
 			}
 		}
-
 		w.WriteHeader(http.StatusCreated)
 		return
+
 	}
 }

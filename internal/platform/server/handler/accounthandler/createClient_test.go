@@ -3,7 +3,8 @@ package accounthandler
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/gin-gonic/gin"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/huandu/go-assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -22,13 +23,13 @@ func TestCreateHandler(t *testing.T) {
 
 	createClientService := service.NewAccountService(accountRepository, clientRepository)
 
-	gin.SetMode(gin.TestMode)
-	r := gin.New()
-	r.POST("/clients", CreateHandler(createClientService))
+	r := chi.NewRouter()
+	r.Use(middleware.GetHead)
+	r.Post("/clients", CreateHandler(createClientService))
 
 	t.Run("given and invalid request it return 400", func(t *testing.T) {
 		createClientReq := createRequest{
-			ID:  "01c8488f-a19d-492d-8a00-9f22278db342",
+			ID:  "invalid-uuid",
 			Email: "some",
 		}
 
