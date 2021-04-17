@@ -2,7 +2,7 @@ package registration
 
 import (
 	"net/http"
-	"rumm-api/internal/core/services/clients"
+	"rumm-api/internal/core/service"
 	"rumm-api/kit/security"
 )
 

@@ -5,6 +5,9 @@ export
 run:
 	cd cmd/api && go run main.go
 
+test:
+	go test ./...
+
 dockerbuild:
 	echo "Ensure run this command with sudo"
 	docker-compose build

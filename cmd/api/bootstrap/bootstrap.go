@@ -9,7 +9,7 @@ import (
 	"github.com/huandu/go-sqlbuilder"
 	"github.com/kelseyhightower/envconfig"
 	_ "github.com/lib/pq"
-	"rumm-api/internal/core/services/clients"
+	"rumm-api/internal/core/service"
 	"rumm-api/internal/platform/server"
 	"rumm-api/internal/platform/storage/postgres"
 	"time"

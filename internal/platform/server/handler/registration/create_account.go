@@ -5,7 +5,7 @@ import (
 	"errors"
 	"github.com/go-playground/validator/v10"
 	"net/http"
-	service "rumm-api/internal/core/services/clients"
+	"rumm-api/internal/core/service"
 	"rumm-api/kit/identifier"
 )
 

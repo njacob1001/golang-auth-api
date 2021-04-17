@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	service "rumm-api/internal/core/services/clients"
+	"rumm-api/internal/core/service"
 	"rumm-api/kit/identifier"
 )
 

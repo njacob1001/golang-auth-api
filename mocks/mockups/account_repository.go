@@ -68,3 +68,17 @@ func (_m *AccountRepository) Create(ctx context.Context, account domain.Account)
 
 	return r0, r1
 }
+
+// Logout provides a mock function with given fields: ctx, accessUuid
+func (_m *AccountRepository) Logout(ctx context.Context, accessUuid string) error {
+	ret := _m.Called(ctx, accessUuid)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = rf(ctx, accessUuid)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}

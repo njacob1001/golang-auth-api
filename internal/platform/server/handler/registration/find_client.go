@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"github.com/go-chi/chi/v5"
 	"net/http"
-	"rumm-api/internal/core/services/clients"
+	"rumm-api/internal/core/service"
 	"rumm-api/kit/identifier"
 )
 

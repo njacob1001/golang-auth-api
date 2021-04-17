@@ -1,9 +1,9 @@
-package routes
+package routeset
 
 import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
-	service "rumm-api/internal/core/services/clients"
+	"rumm-api/internal/core/service"
 	"rumm-api/internal/platform/server/handler/registration"
 )
 

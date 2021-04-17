@@ -5,12 +5,13 @@ import (
 	"encoding/json"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-playground/validator/v10"
 	"github.com/huandu/go-assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
-	"rumm-api/internal/core/services/clients"
+	"rumm-api/internal/core/service"
 	"rumm-api/mocks/mockups"
 	"testing"
 )
@@ -21,10 +22,10 @@ func TestCreateHandler(t *testing.T) {
 	accountRepository := new(storagemocks.AccountRepository)
 
 	createClientService := service.NewAccountService(accountRepository, clientRepository)
-
+	v := validator.New()
 	r := chi.NewRouter()
 	r.Use(middleware.GetHead)
-	r.Post("/clients", CreateClient(createClientService))
+	r.Post("/clients", CreateClient(createClientService, v))
 
 	t.Run("given and invalid request it return 400", func(t *testing.T) {
 		createClientReq := createRequest{
@@ -51,10 +52,10 @@ func TestCreateHandler(t *testing.T) {
 	t.Run("Given a valid request it returns 201", func(t *testing.T) {
 		createClientReq := createRequest{
 			ID:     "01c8488f-a19d-492d-8a00-9f22278db342",
-			Email:    "some",
+			Email:    "jacob@testing.com",
 			Address:  "test",
 			City:     "test",
-			BirthDay: "2020-10-10",
+			BirthDay: "2021-02-28",
 			LastName: "test",
 			Name:     "test",
 			Cellphone: "testing",

@@ -3,16 +3,16 @@ package service
 import (
 	"context"
 	"rumm-api/internal/core/domain"
-	"rumm-api/internal/core/ports"
+	"rumm-api/internal/core/port"
 	"rumm-api/kit/security"
 )
 
 type AccountService struct {
-	clientRepository  ports.ClientRepository
-	accountRepository ports.AccountRepository
+	clientRepository  port.ClientRepository
+	accountRepository port.AccountRepository
 }
 
-func NewAccountService(accountRepository ports.AccountRepository, clientRepository ports.ClientRepository) AccountService {
+func NewAccountService(accountRepository port.AccountRepository, clientRepository port.ClientRepository) AccountService {
 	return AccountService{
 		clientRepository:  clientRepository,
 		accountRepository: accountRepository,

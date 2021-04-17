@@ -5,7 +5,7 @@ import (
 	"errors"
 	"github.com/go-playground/validator/v10"
 	"net/http"
-	"rumm-api/internal/core/services/clients"
+	"rumm-api/internal/core/service"
 	"rumm-api/kit/identifier"
 )
 
@@ -13,7 +13,7 @@ type createRequest struct {
 	ID        string `json:"id" validate:"required"`
 	Name      string `json:"name" validate:"required"`
 	LastName  string `json:"lastName" validate:"required"`
-	BirthDay  string `json:"birthday" validate:"required,datetime"`
+	BirthDay  string `json:"birthday" validate:"required,datetime=2006-01-02"`
 	Email     string `json:"email" validate:"required,email"`
 	City      string `json:"city" validate:"required"`
 	Address   string `json:"address" validate:"required"`

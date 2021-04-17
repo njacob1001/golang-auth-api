@@ -11,10 +11,10 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"rumm-api/internal/core/services/clients"
+	"rumm-api/internal/core/service"
 	"rumm-api/internal/platform/server/apimiddleware"
 	"rumm-api/internal/platform/server/handler/registration"
-	"rumm-api/internal/platform/server/routes"
+	"rumm-api/internal/platform/server/routeset"
 	"time"
 )
 
@@ -83,7 +83,7 @@ func (s *Server) registerRoutes() {
 	s.router.Group(func(r chi.Router) {
 		r.Use(apimiddleware.JwtAuth(s.jwtSecret, s.rdb))
 
-		r.Route("/clients", routes.Client(s.accountService, s.validator))
+		r.Route("/clients", routeset.Client(s.accountService, s.validator))
 	})
 
 	s.router.Post("/logout", registration.Logout(s.accountService, s.jwtSecret))
