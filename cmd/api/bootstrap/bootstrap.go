@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/go-playground/validator/v10"
 	"github.com/go-redis/redis/v8"
 	"github.com/huandu/go-sqlbuilder"
 	"github.com/kelseyhightower/envconfig"
@@ -42,6 +43,8 @@ func Run() error {
 
 	isDevelopMode := !(cfg.ServerMode == "release")
 
+	validate := validator.New()
+
 	ctx, srv, err := server.NewServer(
 		context.Background(),
 		server.WithTimeout(cfg.ShutdownTimeout),
@@ -49,7 +52,8 @@ func Run() error {
 		server.WithClientService(clientService),
 		server.WithDevelopEnv(isDevelopMode),
 		server.WithJwtSecret(cfg.JwtSecret),
-		server.WithRedis(rdb))
+		server.WithRedis(rdb),
+		server.WithValidator(validate))
 
 	if err != nil {
 		return err

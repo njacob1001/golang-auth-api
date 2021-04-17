@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-playground/validator/v10"
 	"github.com/go-redis/redis/v8"
 	"log"
 	"net/http"
@@ -25,6 +26,7 @@ type Server struct {
 	developMode     bool
 	jwtSecret       string
 	rdb             *redis.Client
+	validator       *validator.Validate
 	//deps
 	clientService accountservice.AccountService
 }
@@ -80,13 +82,17 @@ func (s *Server) registerRoutes() {
 	// protected endpoints
 	s.router.Group(func(r chi.Router) {
 		r.Use(apimiddleware.JwtAuthenticationMiddleware(s.jwtSecret, s.rdb))
-		r.Post("/clients", accounthandler.CreateHandler(s.clientService))
-		r.Get("/clients/{id}", accounthandler.FindByIDHandler(s.clientService))
-		r.Delete("/clients/{id}", accounthandler.DeleteByIDHandler(s.clientService))
-		r.Put("/clients/{id}", accounthandler.UpdateHandler(s.clientService))
+		r.Route("/clients", func(r chi.Router) {
+			r.Post("/", accounthandler.CreateHandler(s.clientService, s.validator))
+			r.Route("/{id}", func(r chi.Router) {
+				r.Get("/", accounthandler.FindByIDHandler(s.clientService))
+				r.Delete("/", accounthandler.DeleteByIDHandler(s.clientService))
+				r.Put("/", accounthandler.UpdateHandler(s.clientService))
+			})
+		})
 	})
 
-	s.router.Post("/accounts", accounthandler.CreateAccountHandler(s.clientService))
+	s.router.Post("/accounts", accounthandler.CreateAccountHandler(s.clientService, s.validator))
 	s.router.Post("/auth", accounthandler.ValidateAccountHandler(s.clientService))
 }
 
@@ -139,6 +145,13 @@ func WithDevelopEnv(isDevelopMode bool) Option {
 func WithRedis(rdb *redis.Client) Option {
 	return func(server *Server) error {
 		server.rdb = rdb
+		return nil
+	}
+}
+
+func WithValidator (v *validator.Validate) Option {
+	return func(server *Server) error {
+		server.validator = v
 		return nil
 	}
 }

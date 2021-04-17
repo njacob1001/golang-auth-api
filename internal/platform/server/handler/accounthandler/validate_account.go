@@ -13,6 +13,11 @@ type validateAccountRequest struct {
 	Identifier string `json:"identifier" binding:"required"`
 }
 
+type authResponse struct {
+	AccessToken string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+}
+
 func ValidateAccountHandler(accountService service.AccountService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
@@ -24,7 +29,7 @@ func ValidateAccountHandler(accountService service.AccountService) http.HandlerF
 			return
 		}
 
-		_, err := accountService.Authenticate(ctx, req.Identifier, req.Password)
+		_, td,err := accountService.Authenticate(ctx, req.Identifier, req.Password)
 
 		if err != nil {
 			switch {
@@ -37,7 +42,23 @@ func ValidateAccountHandler(accountService service.AccountService) http.HandlerF
 			}
 		}
 
-		w.WriteHeader(http.StatusOK)
+		response := authResponse{
+			AccessToken: td.AccessToken,
+			RefreshToken: td.RefreshToken,
+		}
+
+		j, err := json.Marshal(response)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		if _, err := w.Write(j); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(http.StatusCreated)
 		return
 
 	}

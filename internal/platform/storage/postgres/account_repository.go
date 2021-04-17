@@ -30,7 +30,7 @@ func NewAccountRepository(db *sql.DB, dbTimeout time.Duration, jwtSecret string,
 	}
 }
 
-func (r *AccountRepository) Create(ctx context.Context, account domain.Account) error {
+func (r *AccountRepository) Create(ctx context.Context, account domain.Account) (*security.TokenDetails, error) {
 	query, args := accountSQLStruck.InsertInto(sqlAccountTable, sqlAccount{
 		ID:          account.ID(),
 		Identifier:  account.Identifier(),
@@ -43,12 +43,17 @@ func (r *AccountRepository) Create(ctx context.Context, account domain.Account) 
 
 	_, err := r.db.ExecContext(ctxTimeout, query, args...)
 	if err != nil {
-		return fmt.Errorf("error trying to persist account on database: %v", err)
+		return nil, fmt.Errorf("error trying to persist account on database: %v", err)
 	}
 
-	return nil
+	td, err := security.CreateToken(r.jwtSecret, account.ID())
+	if err != nil {
+		return nil, err
+	}
+
+	return td, nil
 }
-func (r *AccountRepository) Authenticate(ctx context.Context, accIdentifier, password string) (domain.Account, error) {
+func (r *AccountRepository) Authenticate(ctx context.Context, accIdentifier, password string) (domain.Account, *security.TokenDetails, error) {
 
 	sb := accountInfoSQLStruck.SelectFrom(sqlAccountTable)
 	query, args := sb.Where(sb.Equal("identifier", accIdentifier)).Build()
@@ -60,7 +65,7 @@ func (r *AccountRepository) Authenticate(ctx context.Context, accIdentifier, pas
 
 	var acc accountInfo
 	if err := row.Scan(accountInfoSQLStruck.Addr(&acc)...); err != nil {
-		return domain.Account{}, fmt.Errorf("error trying to find account on database, account doesn't exist: %v", err)
+		return domain.Account{}, nil, fmt.Errorf("error trying to find account on database, account doesn't exist: %v", err)
 	}
 
 	account, err := domain.NewAccount(
@@ -69,26 +74,26 @@ func (r *AccountRepository) Authenticate(ctx context.Context, accIdentifier, pas
 		domain.WithAccountHashedPass(acc.Password),
 		domain.WithAccountType(acc.AccountID))
 	if err != nil {
-		return domain.Account{}, err
+		return domain.Account{}, nil, err
 	}
 
 	isValid, err := account.ValidatePassword(password)
 
 	if err != nil {
-		return domain.Account{}, err
+		return domain.Account{}, nil, err
 	}
 	if isValid {
 		td, err := security.CreateToken(r.jwtSecret, account.ID())
 		if err != nil {
-			return domain.Account{}, err
-		}
-		
-		if err := security.CreateAuth(ctxTimeout, account.ID(), td, r.rdb); err != nil {
-			return domain.Account{}, err
+			return domain.Account{}, nil, err
 		}
 
-		return account, nil
+		if err := security.CreateAuth(ctxTimeout, account.ID(), td, r.rdb); err != nil {
+			return domain.Account{}, nil, err
+		}
+
+		return account, td, nil
 	}
 
-	return domain.Account{}, domain.ErrAccountValidation
+	return domain.Account{}, nil, domain.ErrAccountValidation
 }

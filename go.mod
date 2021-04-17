@@ -6,6 +6,7 @@ require (
 	github.com/DATA-DOG/go-sqlmock v1.5.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-chi/chi/v5 v5.0.2
+	github.com/go-playground/validator/v10 v10.5.0
 	github.com/go-redis/redis/v8 v8.8.0
 	github.com/google/uuid v1.2.0
 	github.com/huandu/go-assert v1.1.5

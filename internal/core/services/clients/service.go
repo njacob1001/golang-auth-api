@@ -4,6 +4,7 @@ import (
 	"context"
 	"rumm-api/internal/core/domain"
 	"rumm-api/internal/core/ports"
+	"rumm-api/kit/security"
 )
 
 type AccountService struct {
@@ -51,7 +52,7 @@ func (s AccountService) UpdateClientByID(ctx context.Context, uuid, name, lastNa
 	}
 	return s.clientRepository.Update(ctx, uuid, client)
 }
-func (s AccountService) CreateAccount(ctx context.Context, id, identifier, password, accountType string) error {
+func (s AccountService) CreateAccount(ctx context.Context, id, identifier, password, accountType string) (*security.TokenDetails, error) {
 	account, err := domain.NewAccount(
 		domain.WithAccountID(id),
 		domain.WithAccountPass(password),
@@ -59,12 +60,12 @@ func (s AccountService) CreateAccount(ctx context.Context, id, identifier, passw
 		domain.WithAccountType(accountType))
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	return s.accountRepository.Create(ctx, account)
 }
 
-func (s AccountService) Authenticate(ctx context.Context, accIdentifier, password string) (domain.Account, error) {
+func (s AccountService) Authenticate(ctx context.Context, accIdentifier, password string) (domain.Account, *security.TokenDetails, error) {
 	return s.accountRepository.Authenticate(ctx, accIdentifier, password)
 }

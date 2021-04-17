@@ -3,19 +3,28 @@ package accounthandler
 import (
 	"encoding/json"
 	"errors"
+	"github.com/go-playground/validator/v10"
 	"net/http"
 	service "rumm-api/internal/core/services/clients"
 	"rumm-api/kit/identifier"
 )
 
+
 type createAccountRequest struct {
-	ID          string `json:"id" binding:"required"`
-	Password    string `json:"password" binding:"required"`
-	Identifier  string `json:"identifier" binding:"required"`
-	AccountType string `json:"accountType" binding:"required"`
+	ID          string `json:"id" validate:"required"`
+	Password    string `json:"password" validate:"required"`
+	Identifier  string `json:"identifier" validate:"required"`
+	AccountType string `json:"accountType" validate:"required"`
 }
 
-func CreateAccountHandler(accountService service.AccountService) http.HandlerFunc {
+
+type createResponse struct {
+	AccessToken string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+}
+
+
+func CreateAccountHandler(accountService service.AccountService, validate *validator.Validate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		var req createAccountRequest
@@ -24,8 +33,12 @@ func CreateAccountHandler(accountService service.AccountService) http.HandlerFun
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
+		if err := validate.Struct(req); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 
-		err := accountService.CreateAccount(ctx, req.ID, req.Identifier, req.Password, req.AccountType)
+		td, err := accountService.CreateAccount(ctx, req.ID, req.Identifier, req.Password, req.AccountType)
 
 		if err != nil {
 			switch {
@@ -38,7 +51,25 @@ func CreateAccountHandler(accountService service.AccountService) http.HandlerFun
 				return
 			}
 		}
+
+		response := createResponse{
+			AccessToken: td.AccessToken,
+			RefreshToken: td.RefreshToken,
+		}
+
+		j, err := json.Marshal(response)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		if _, err := w.Write(j); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(http.StatusCreated)
+		return
 
 	}
 }
