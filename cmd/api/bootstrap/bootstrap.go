@@ -46,7 +46,7 @@ func Run() error {
 
 	validate := validator.New()
 
-	ctx, srv, err := server.NewServer(
+	ctx, srv, err := server.New(
 		context.Background(),
 		server.WithTimeout(cfg.ShutdownTimeout),
 		server.WithAddress(cfg.Host, cfg.Port),

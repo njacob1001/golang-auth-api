@@ -3,7 +3,7 @@ include .env.development
 export
 
 run:
-	cd cmd/api && go run main.go
+	redis-server & cd cmd/api && go run main.go
 
 test:
 	go test ./...

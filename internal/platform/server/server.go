@@ -32,7 +32,7 @@ type Server struct {
 	accountService service.AccountService
 }
 
-func NewServer(ctx context.Context, options ...Option) (context.Context, Server, error) {
+func New(ctx context.Context, options ...Option) (context.Context, Server, error) {
 	r := chi.NewRouter()
 	r.Use(middleware.Recoverer)
 
