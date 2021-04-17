@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-redis/redis/v8"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"rumm-api/internal/core/services/clients"
+	"rumm-api/internal/platform/server/apimiddleware"
 	"rumm-api/internal/platform/server/handler/accounthandler"
 	"time"
 )
@@ -21,7 +23,8 @@ type Server struct {
 	router          *chi.Mux
 	shutdownTimeout time.Duration
 	developMode     bool
-
+	jwtSecret       string
+	rdb             *redis.Client
 	//deps
 	clientService accountservice.AccountService
 }
@@ -73,10 +76,15 @@ func (s *Server) Run(ctx context.Context) error {
 }
 
 func (s *Server) registerRoutes() {
-	s.router.Post("/clients", accounthandler.CreateHandler(s.clientService))
-	s.router.Get("/clients/{id}", accounthandler.FindByIDHandler(s.clientService))
-	s.router.Delete("/clients/{id}", accounthandler.DeleteByIDHandler(s.clientService))
-	s.router.Put("/clients/{id}", accounthandler.UpdateHandler(s.clientService))
+
+	// protected endpoints
+	s.router.Group(func(r chi.Router) {
+		r.Use(apimiddleware.JwtAuthenticationMiddleware(s.jwtSecret, s.rdb))
+		r.Post("/clients", accounthandler.CreateHandler(s.clientService))
+		r.Get("/clients/{id}", accounthandler.FindByIDHandler(s.clientService))
+		r.Delete("/clients/{id}", accounthandler.DeleteByIDHandler(s.clientService))
+		r.Put("/clients/{id}", accounthandler.UpdateHandler(s.clientService))
+	})
 
 	s.router.Post("/accounts", accounthandler.CreateAccountHandler(s.clientService))
 	s.router.Post("/auth", accounthandler.ValidateAccountHandler(s.clientService))
@@ -92,6 +100,13 @@ func serverContext(ctx context.Context) context.Context {
 	}()
 
 	return ctx
+}
+
+func WithJwtSecret(secret string) Option {
+	return func(server *Server) error {
+		server.jwtSecret = secret
+		return nil
+	}
 }
 
 func WithAddress(host string, port uint) Option {
@@ -117,6 +132,13 @@ func WithClientService(clientService accountservice.AccountService) Option {
 func WithDevelopEnv(isDevelopMode bool) Option {
 	return func(server *Server) error {
 		server.developMode = isDevelopMode
+		return nil
+	}
+}
+
+func WithRedis(rdb *redis.Client) Option {
+	return func(server *Server) error {
+		server.rdb = rdb
 		return nil
 	}
 }

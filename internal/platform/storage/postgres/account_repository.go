@@ -82,18 +82,9 @@ func (r *AccountRepository) Authenticate(ctx context.Context, accIdentifier, pas
 		if err != nil {
 			return domain.Account{}, err
 		}
-		at := time.Unix(td.AtExpires,0)
-		rt := time.Unix(td.RtExpires, 0)
-		now := time.Now()
-
-		errAccess := r.rdb.Set(ctxTimeout, td.AccessUuid, account.ID(), at.Sub(now)).Err()
-		if errAccess != nil {
-			return domain.Account{}, errAccess
-		}
-
-		errRefresh := r.rdb.Set(ctxTimeout, td.RefreshUuid, account.ID(), rt.Sub(now)).Err()
-		if errRefresh != nil {
-			return domain.Account{}, errRefresh
+		
+		if err := security.CreateAuth(ctxTimeout, account.ID(), td, r.rdb); err != nil {
+			return domain.Account{}, err
 		}
 
 		return account, nil

@@ -31,9 +31,9 @@ func Run() error {
 
 	redisURI := fmt.Sprintf("%v:%v", cfg.RdbHost, cfg.RdbPort)
 	rdb := redis.NewClient(&redis.Options{
-		Addr: redisURI,
+		Addr:     redisURI,
 		Password: cfg.RdbPassword,
-		DB: cfg.RdbIndex,
+		DB:       cfg.RdbIndex,
 	})
 
 	clientRepository := postgres.NewClientRepository(db, cfg.DbTimeout)
@@ -47,7 +47,9 @@ func Run() error {
 		server.WithTimeout(cfg.ShutdownTimeout),
 		server.WithAddress(cfg.Host, cfg.Port),
 		server.WithClientService(clientService),
-		server.WithDevelopEnv(isDevelopMode))
+		server.WithDevelopEnv(isDevelopMode),
+		server.WithJwtSecret(cfg.JwtSecret),
+		server.WithRedis(rdb))
 
 	if err != nil {
 		return err
@@ -71,11 +73,11 @@ type config struct {
 	ServerMode string        `default:"develop"`
 
 	// authentication
-	JwtSecret  string        `required:"true"`
+	JwtSecret string `required:"true"`
 
 	// Redis database
-	RdbIndex int `default:"0"`
+	RdbIndex    int    `default:"0"`
 	RdbPassword string `default:""`
-	RdbHost string `default:"0.0.0.0"`
-	RdbPort uint `default:"6379"`
+	RdbHost     string `default:"0.0.0.0"`
+	RdbPort     uint   `default:"6379"`
 }

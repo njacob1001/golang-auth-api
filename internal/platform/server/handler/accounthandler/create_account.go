@@ -22,6 +22,7 @@ func CreateAccountHandler(accountService service.AccountService) http.HandlerFun
 
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
 		}
 
 		err := accountService.CreateAccount(ctx, req.ID, req.Identifier, req.Password, req.AccountType)
