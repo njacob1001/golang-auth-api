@@ -74,3 +74,7 @@ func (s AccountService) Authenticate(ctx context.Context, accIdentifier, passwor
 func (s AccountService) Logout(ctx context.Context, accessUUID string) error {
 	return s.accountRepository.Logout(ctx, accessUUID)
 }
+
+func (s AccountService) Refresh(ctx context.Context, refreshToken string) (*security.TokenDetails, error) {
+	return s.accountRepository.Refresh(ctx, refreshToken)
+}

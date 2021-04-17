@@ -82,3 +82,26 @@ func (_m *AccountRepository) Logout(ctx context.Context, accessUuid string) erro
 
 	return r0
 }
+
+// Refresh provides a mock function with given fields: ctx, token
+func (_m *AccountRepository) Refresh(ctx context.Context, token string) (*security.TokenDetails, error) {
+	ret := _m.Called(ctx, token)
+
+	var r0 *security.TokenDetails
+	if rf, ok := ret.Get(0).(func(context.Context, string) *security.TokenDetails); ok {
+		r0 = rf(ctx, token)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*security.TokenDetails)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, token)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
