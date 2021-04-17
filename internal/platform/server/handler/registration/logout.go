@@ -12,7 +12,7 @@ func Logout(accountService service.AccountService, secret string) http.HandlerFu
 
 		td, err := security.ExtractTokenMetadata(secret, r)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
 

@@ -57,7 +57,7 @@ func ValidateAccount(accountService service.AccountService) http.HandlerFunc {
 			return
 		}
 
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
 		return
 

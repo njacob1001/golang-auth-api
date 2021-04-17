@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/go-redis/redis/v8"
 	"github.com/huandu/go-sqlbuilder"
 	"rumm-api/internal/core/domain"
@@ -102,13 +103,66 @@ func (r *AccountRepository) Logout(ctx context.Context, accessUUID string) error
 	ctxTimeout, cancel := context.WithTimeout(ctx, r.dbTimeout)
 	defer cancel()
 
-	_, err := security.DeleteAuth(ctxTimeout, r.rdb,accessUUID)
+	_, err := security.DeleteAuth(ctxTimeout, r.rdb, accessUUID)
 
 	if err != nil {
 		return err
 	}
 	return nil
+}
 
+func (r *AccountRepository) Refresh(ctx context.Context, refreshToken string) (*security.TokenDetails, error) {
+	ctxTimeout, cancel := context.WithTimeout(ctx, r.dbTimeout)
+	defer cancel()
 
+	token, err := jwt.Parse(refreshToken, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+
+		return []byte(r.jwtSecret), nil
+	})
+	if err != nil {
+		//http.Error(w, "Refresh token expired", http.StatusUnauthorized)
+		return nil, err
+	}
+
+	if _, ok := token.Claims.(jwt.Claims); !ok && !token.Valid {
+		//http.Error(w, err.Error(), http.StatusUnauthorized)
+		return nil, err
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if ok && token.Valid {
+		refreshUuid, ok := claims["refresh_uuid"].(string)
+
+		if !ok {
+			//http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+			return nil, err
+		}
+		userID, ok := claims["id"].(string)
+		if !ok {
+			//http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+			return nil, err
+		}
+
+		deleted, err := security.DeleteAuth(ctxTimeout, r.rdb, refreshUuid)
+
+		if err != nil || deleted == 0 {
+			return nil, err //No autorizado
+		}
+
+		ts, err := security.CreateToken(r.jwtSecret, userID)
+
+		if err != nil {
+			return nil, err // forbidden
+		}
+		if err := security.CreateAuth(ctxTimeout, userID, ts, r.rdb); err != nil {
+			return nil, err // forbidden
+		}
+		return ts, nil
+
+	}
+	return nil, security.ErrTokenCreator
 
 }

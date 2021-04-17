@@ -27,7 +27,7 @@ func TestCreateHandler(t *testing.T) {
 	r.Use(middleware.GetHead)
 	r.Post("/clients", CreateClient(createClientService, v))
 
-	
+
 	t.Run("given and invalid request it return 400", func(t *testing.T) {
 		createClientReq := createRequest{
 			ID:  "invalid-uuid",

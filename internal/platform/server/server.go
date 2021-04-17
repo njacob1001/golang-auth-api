@@ -89,6 +89,7 @@ func (s *Server) registerRoutes() {
 	s.router.Post("/logout", registration.Logout(s.accountService, s.jwtSecret))
 	s.router.Post("/accounts", registration.CreateAccount(s.accountService, s.validator))
 	s.router.Post("/auth", registration.ValidateAccount(s.accountService))
+	s.router.Post("/refresh", registration.RefreshToken(s.accountService))
 
 }
 
