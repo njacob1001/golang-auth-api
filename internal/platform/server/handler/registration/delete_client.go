@@ -1,4 +1,4 @@
-package accounthandler
+package registration
 
 import (
 	"github.com/go-chi/chi/v5"

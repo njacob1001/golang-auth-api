@@ -1,4 +1,4 @@
-package accounthandler
+package registration
 
 import (
 	"encoding/json"

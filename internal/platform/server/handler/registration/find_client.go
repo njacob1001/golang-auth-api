@@ -1,4 +1,4 @@
-package accounthandler
+package registration
 
 import (
 	"encoding/json"
@@ -19,7 +19,7 @@ type clientResponse struct {
 	Cellphone string `json:"cellphone"`
 }
 
-func FindClient(accountService accountservice.AccountService) http.HandlerFunc {
+func FindClient(accountService service.AccountService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 

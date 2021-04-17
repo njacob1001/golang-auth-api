@@ -1,4 +1,4 @@
-package accounthandler
+package registration
 
 import (
 	"encoding/json"
@@ -20,7 +20,7 @@ type createRequest struct {
 	Cellphone string `json:"cellphone" validate:"required"`
 }
 
-func CreateClient(accountService accountservice.AccountService, validate *validator.Validate) http.HandlerFunc {
+func CreateClient(accountService service.AccountService, validate *validator.Validate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		ctx := r.Context()

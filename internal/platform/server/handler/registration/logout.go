@@ -1,4 +1,4 @@
-package accounthandler
+package registration
 
 import (
 	"net/http"
@@ -6,7 +6,7 @@ import (
 	"rumm-api/kit/security"
 )
 
-func Logout(accountService accountservice.AccountService, secret string) http.HandlerFunc {
+func Logout(accountService service.AccountService, secret string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 

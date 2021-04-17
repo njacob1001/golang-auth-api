@@ -4,16 +4,16 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
 	service "rumm-api/internal/core/services/clients"
-	"rumm-api/internal/platform/server/handler/accounthandler"
+	"rumm-api/internal/platform/server/handler/registration"
 )
 
 func Client(accountService service.AccountService, validate *validator.Validate) func(r chi.Router) {
 	return func (r chi.Router) {
-		r.Post("/", accounthandler.CreateClient(accountService, validate))
+		r.Post("/", registration.CreateClient(accountService, validate))
 		r.Route("/{id}", func(r chi.Router) {
-			r.Get("/", accounthandler.FindClient(accountService))
-			r.Delete("/", accounthandler.DeleteClient(accountService))
-			r.Put("/", accounthandler.UpdateClient(accountService))
+			r.Get("/", registration.FindClient(accountService))
+			r.Delete("/", registration.DeleteClient(accountService))
+			r.Put("/", registration.UpdateClient(accountService))
 		})
 	}
 }

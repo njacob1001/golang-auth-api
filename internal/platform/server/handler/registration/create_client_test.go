@@ -1,4 +1,4 @@
-package accounthandler
+package registration
 
 import (
 	"bytes"
@@ -20,7 +20,7 @@ func TestCreateHandler(t *testing.T) {
 	clientRepository.On("Create", mock.Anything, mock.Anything).Return(nil)
 	accountRepository := new(storagemocks.AccountRepository)
 
-	createClientService := accountservice.NewAccountService(accountRepository, clientRepository)
+	createClientService := service.NewAccountService(accountRepository, clientRepository)
 
 	r := chi.NewRouter()
 	r.Use(middleware.GetHead)

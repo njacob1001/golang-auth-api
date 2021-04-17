@@ -40,7 +40,7 @@ func Run() error {
 	clientRepository := postgres.NewClientRepository(db, cfg.DbTimeout)
 	accountRepository := postgres.NewAccountRepository(db, cfg.DbTimeout, cfg.JwtSecret, rdb)
 
-	accountService := accountservice.NewAccountService(accountRepository, clientRepository)
+	accountService := service.NewAccountService(accountRepository, clientRepository)
 
 	isDevelopMode := !(cfg.ServerMode == "release")
 

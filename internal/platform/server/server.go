@@ -13,7 +13,7 @@ import (
 	"os/signal"
 	"rumm-api/internal/core/services/clients"
 	"rumm-api/internal/platform/server/apimiddleware"
-	"rumm-api/internal/platform/server/handler/accounthandler"
+	"rumm-api/internal/platform/server/handler/registration"
 	"rumm-api/internal/platform/server/routes"
 	"time"
 )
@@ -29,7 +29,7 @@ type Server struct {
 	rdb             *redis.Client
 	validator       *validator.Validate
 	//deps
-	accountService accountservice.AccountService
+	accountService service.AccountService
 }
 
 func NewServer(ctx context.Context, options ...Option) (context.Context, Server, error) {
@@ -86,9 +86,9 @@ func (s *Server) registerRoutes() {
 		r.Route("/clients", routes.Client(s.accountService, s.validator))
 	})
 
-	s.router.Post("/logout", accounthandler.Logout(s.accountService, s.jwtSecret))
-	s.router.Post("/accounts", accounthandler.CreateAccount(s.accountService, s.validator))
-	s.router.Post("/auth", accounthandler.ValidateAccount(s.accountService))
+	s.router.Post("/logout", registration.Logout(s.accountService, s.jwtSecret))
+	s.router.Post("/accounts", registration.CreateAccount(s.accountService, s.validator))
+	s.router.Post("/auth", registration.ValidateAccount(s.accountService))
 
 }
 
@@ -122,7 +122,7 @@ func WithTimeout(timeout time.Duration) Option {
 		return nil
 	}
 }
-func WithClientService(clientService accountservice.AccountService) Option {
+func WithClientService(clientService service.AccountService) Option {
 	return func(server *Server) error {
 		server.accountService = clientService
 		return nil
