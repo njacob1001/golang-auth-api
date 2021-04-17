@@ -35,6 +35,12 @@ services:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - '25432:5432'
+  redis:
+    container_name: redis
+    image: redis:alpine3.13
+    volumes:
+      - redisdata:/data
 volumes:
   portainer:
   pg_database:
+  redisdata:
