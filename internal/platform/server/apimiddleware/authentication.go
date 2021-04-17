@@ -6,7 +6,7 @@ import (
 	"rumm-api/kit/security"
 )
 
-func JwtAuthenticationMiddleware(secret string, rdb *redis.Client) func(http.Handler) http.Handler {
+func JwtAuth(secret string, rdb *redis.Client) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()

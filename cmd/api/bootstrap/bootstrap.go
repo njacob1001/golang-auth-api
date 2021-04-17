@@ -39,7 +39,8 @@ func Run() error {
 
 	clientRepository := postgres.NewClientRepository(db, cfg.DbTimeout)
 	accountRepository := postgres.NewAccountRepository(db, cfg.DbTimeout, cfg.JwtSecret, rdb)
-	clientService := accountservice.NewAccountService(accountRepository, clientRepository)
+
+	accountService := accountservice.NewAccountService(accountRepository, clientRepository)
 
 	isDevelopMode := !(cfg.ServerMode == "release")
 
@@ -49,7 +50,7 @@ func Run() error {
 		context.Background(),
 		server.WithTimeout(cfg.ShutdownTimeout),
 		server.WithAddress(cfg.Host, cfg.Port),
-		server.WithClientService(clientService),
+		server.WithClientService(accountService),
 		server.WithDevelopEnv(isDevelopMode),
 		server.WithJwtSecret(cfg.JwtSecret),
 		server.WithRedis(rdb),

@@ -24,7 +24,7 @@ type createResponse struct {
 }
 
 
-func CreateAccountHandler(accountService service.AccountService, validate *validator.Validate) http.HandlerFunc {
+func CreateAccount(accountService service.AccountService, validate *validator.Validate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		var req createAccountRequest

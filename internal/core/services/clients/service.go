@@ -69,3 +69,8 @@ func (s AccountService) CreateAccount(ctx context.Context, id, identifier, passw
 func (s AccountService) Authenticate(ctx context.Context, accIdentifier, password string) (domain.Account, *security.TokenDetails, error) {
 	return s.accountRepository.Authenticate(ctx, accIdentifier, password)
 }
+
+
+func (s AccountService) Logout(ctx context.Context, accessUUID string) error {
+	return s.accountRepository.Logout(ctx, accessUUID)
+}

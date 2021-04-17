@@ -8,7 +8,7 @@ import (
 )
 
 
-func DeleteByIDHandler(clientService service.AccountService) http.HandlerFunc {
+func DeleteClient(clientService service.AccountService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 

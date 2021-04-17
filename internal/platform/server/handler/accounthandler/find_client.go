@@ -19,13 +19,14 @@ type clientResponse struct {
 	Cellphone string `json:"cellphone"`
 }
 
-func FindByIDHandler(clientService accountservice.AccountService) http.HandlerFunc {
+func FindClient(accountService accountservice.AccountService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
 		requestID := chi.URLParam(r, "id")
 		if requestID=="" {
 			http.Error(w, "Client ID is required", http.StatusBadRequest)
+			return
 		}
 
 
@@ -36,7 +37,7 @@ func FindByIDHandler(clientService accountservice.AccountService) http.HandlerFu
 			return
 		}
 
-		client, err := clientService.FindClientByID(ctx, id.String)
+		client, err := accountService.FindClientByID(ctx, id.String)
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)

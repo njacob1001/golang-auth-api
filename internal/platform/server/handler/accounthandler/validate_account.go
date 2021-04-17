@@ -18,7 +18,7 @@ type authResponse struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
-func ValidateAccountHandler(accountService service.AccountService) http.HandlerFunc {
+func ValidateAccount(accountService service.AccountService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 

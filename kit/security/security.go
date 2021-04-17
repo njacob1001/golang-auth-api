@@ -170,3 +170,12 @@ func FetchAuth(ctx context.Context, authD *AccessDetails, rdb *redis.Client) (st
 	}
 	return userid, nil
 }
+
+func DeleteAuth(ctx context.Context, rdb *redis.Client, givenUUID string) (int64, error) {
+	deleted, err := rdb.Del(ctx, givenUUID).Result()
+	if err != nil {
+		return 0, err
+	}
+
+	return deleted, nil
+}

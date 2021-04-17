@@ -97,3 +97,18 @@ func (r *AccountRepository) Authenticate(ctx context.Context, accIdentifier, pas
 
 	return domain.Account{}, nil, domain.ErrAccountValidation
 }
+
+func (r *AccountRepository) Logout(ctx context.Context, accessUUID string) error {
+	ctxTimeout, cancel := context.WithTimeout(ctx, r.dbTimeout)
+	defer cancel()
+
+	_, err := security.DeleteAuth(ctxTimeout, r.rdb,accessUUID)
+
+	if err != nil {
+		return err
+	}
+	return nil
+
+
+
+}

@@ -24,7 +24,7 @@ func TestCreateHandler(t *testing.T) {
 
 	r := chi.NewRouter()
 	r.Use(middleware.GetHead)
-	r.Post("/clients", CreateHandler(createClientService))
+	r.Post("/clients", CreateClient(createClientService))
 
 	t.Run("given and invalid request it return 400", func(t *testing.T) {
 		createClientReq := createRequest{

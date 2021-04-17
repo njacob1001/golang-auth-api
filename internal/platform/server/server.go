@@ -14,6 +14,7 @@ import (
 	"rumm-api/internal/core/services/clients"
 	"rumm-api/internal/platform/server/apimiddleware"
 	"rumm-api/internal/platform/server/handler/accounthandler"
+	"rumm-api/internal/platform/server/routes"
 	"time"
 )
 
@@ -28,7 +29,7 @@ type Server struct {
 	rdb             *redis.Client
 	validator       *validator.Validate
 	//deps
-	clientService accountservice.AccountService
+	accountService accountservice.AccountService
 }
 
 func NewServer(ctx context.Context, options ...Option) (context.Context, Server, error) {
@@ -74,27 +75,23 @@ func (s *Server) Run(ctx context.Context) error {
 	defer cancel()
 
 	return srv.Shutdown(ctxShutDown)
-
 }
 
 func (s *Server) registerRoutes() {
 
 	// protected endpoints
 	s.router.Group(func(r chi.Router) {
-		r.Use(apimiddleware.JwtAuthenticationMiddleware(s.jwtSecret, s.rdb))
-		r.Route("/clients", func(r chi.Router) {
-			r.Post("/", accounthandler.CreateHandler(s.clientService, s.validator))
-			r.Route("/{id}", func(r chi.Router) {
-				r.Get("/", accounthandler.FindByIDHandler(s.clientService))
-				r.Delete("/", accounthandler.DeleteByIDHandler(s.clientService))
-				r.Put("/", accounthandler.UpdateHandler(s.clientService))
-			})
-		})
+		r.Use(apimiddleware.JwtAuth(s.jwtSecret, s.rdb))
+
+		r.Route("/clients", routes.Client(s.accountService, s.validator))
 	})
 
-	s.router.Post("/accounts", accounthandler.CreateAccountHandler(s.clientService, s.validator))
-	s.router.Post("/auth", accounthandler.ValidateAccountHandler(s.clientService))
+	s.router.Post("/logout", accounthandler.Logout(s.accountService, s.jwtSecret))
+	s.router.Post("/accounts", accounthandler.CreateAccount(s.accountService, s.validator))
+	s.router.Post("/auth", accounthandler.ValidateAccount(s.accountService))
+
 }
+
 
 func serverContext(ctx context.Context) context.Context {
 	c := make(chan os.Signal, 1)
@@ -107,31 +104,27 @@ func serverContext(ctx context.Context) context.Context {
 
 	return ctx
 }
-
 func WithJwtSecret(secret string) Option {
 	return func(server *Server) error {
 		server.jwtSecret = secret
 		return nil
 	}
 }
-
 func WithAddress(host string, port uint) Option {
 	return func(server *Server) error {
 		server.httpAddress = fmt.Sprintf("%s:%d", host, port)
 		return nil
 	}
 }
-
 func WithTimeout(timeout time.Duration) Option {
 	return func(server *Server) error {
 		server.shutdownTimeout = timeout
 		return nil
 	}
 }
-
 func WithClientService(clientService accountservice.AccountService) Option {
 	return func(server *Server) error {
-		server.clientService = clientService
+		server.accountService = clientService
 		return nil
 	}
 }
@@ -141,14 +134,12 @@ func WithDevelopEnv(isDevelopMode bool) Option {
 		return nil
 	}
 }
-
 func WithRedis(rdb *redis.Client) Option {
 	return func(server *Server) error {
 		server.rdb = rdb
 		return nil
 	}
 }
-
 func WithValidator (v *validator.Validate) Option {
 	return func(server *Server) error {
 		server.validator = v
