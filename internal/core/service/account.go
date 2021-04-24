@@ -52,7 +52,7 @@ func (s AccountService) UpdateClientByID(ctx context.Context, uuid, name, lastNa
 	}
 	return s.clientRepository.Update(ctx, uuid, client)
 }
-func (s AccountService) CreateAccount(ctx context.Context, id, identifier, password, accountType string) (*security.TokenDetails, error) {
+func (s AccountService) CreateAccount(ctx context.Context, id, identifier, password, accountType, clientID string) (*security.TokenDetails, error) {
 	account, err := domain.NewAccount(
 		domain.WithAccountID(id),
 		domain.WithAccountPass(password),
@@ -63,13 +63,12 @@ func (s AccountService) CreateAccount(ctx context.Context, id, identifier, passw
 		return nil, err
 	}
 
-	return s.accountRepository.Create(ctx, account)
+	return s.accountRepository.Create(ctx, account, clientID)
 }
 
 func (s AccountService) Authenticate(ctx context.Context, accIdentifier, password string) (domain.Account, *security.TokenDetails, error) {
 	return s.accountRepository.Authenticate(ctx, accIdentifier, password)
 }
-
 
 func (s AccountService) Logout(ctx context.Context, accessUUID string) error {
 	return s.accountRepository.Logout(ctx, accessUUID)

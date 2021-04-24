@@ -46,13 +46,13 @@ func (_m *AccountRepository) Authenticate(ctx context.Context, accIdentifier str
 	return r0, r1, r2
 }
 
-// Create provides a mock function with given fields: ctx, account
-func (_m *AccountRepository) Create(ctx context.Context, account domain.Account) (*security.TokenDetails, error) {
-	ret := _m.Called(ctx, account)
+// Create provides a mock function with given fields: ctx, account, clientID
+func (_m *AccountRepository) Create(ctx context.Context, account domain.Account, clientID string) (*security.TokenDetails, error) {
+	ret := _m.Called(ctx, account, clientID)
 
 	var r0 *security.TokenDetails
-	if rf, ok := ret.Get(0).(func(context.Context, domain.Account) *security.TokenDetails); ok {
-		r0 = rf(ctx, account)
+	if rf, ok := ret.Get(0).(func(context.Context, domain.Account, string) *security.TokenDetails); ok {
+		r0 = rf(ctx, account, clientID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*security.TokenDetails)
@@ -60,8 +60,8 @@ func (_m *AccountRepository) Create(ctx context.Context, account domain.Account)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, domain.Account) error); ok {
-		r1 = rf(ctx, account)
+	if rf, ok := ret.Get(1).(func(context.Context, domain.Account, string) error); ok {
+		r1 = rf(ctx, account, clientID)
 	} else {
 		r1 = ret.Error(1)
 	}

@@ -31,12 +31,13 @@ func NewAccountRepository(db *sql.DB, dbTimeout time.Duration, jwtSecret string,
 	}
 }
 
-func (r *AccountRepository) Create(ctx context.Context, account domain.Account) (*security.TokenDetails, error) {
+func (r *AccountRepository) Create(ctx context.Context, account domain.Account, clientID string) (*security.TokenDetails, error) {
 	query, args := accountSQLStruck.InsertInto(sqlAccountTable, sqlAccount{
 		ID:          account.ID(),
 		Identifier:  account.Identifier(),
 		Password:    account.Password(),
 		AccountType: account.AccountType(),
+		ClientID: clientID,
 	}).Build()
 
 	ctxTimeout, cancel := context.WithTimeout(ctx, r.dbTimeout)

@@ -11,10 +11,11 @@ import (
 
 
 type createAccountRequest struct {
-	ID          string `json:"id" validate:"required"`
+	ID          string `json:"id" validate:"required,uuid4"`
 	Password    string `json:"password" validate:"required"`
 	Identifier  string `json:"identifier" validate:"required"`
-	AccountType string `json:"accountType" validate:"required"`
+	AccountType string `json:"accountType" validate:"required,uuid4"`
+	ClientID string `json:"clientID" validate:"required,uuid4"`
 }
 
 
@@ -38,7 +39,7 @@ func CreateAccount(accountService service.AccountService, validate *validator.Va
 			return
 		}
 
-		td, err := accountService.CreateAccount(ctx, req.ID, req.Identifier, req.Password, req.AccountType)
+		td, err := accountService.CreateAccount(ctx, req.ID, req.Identifier, req.Password, req.AccountType, req.ClientID)
 
 		if err != nil {
 			switch {
