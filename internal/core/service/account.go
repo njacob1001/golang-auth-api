@@ -32,6 +32,19 @@ func (s AccountService) CreateClient(ctx context.Context, uuid, name, lastName, 
 	return s.clientRepository.Create(ctx, client)
 }
 
+func(s AccountService) CreateTemporalClient(ctx context.Context, uuid, name, lastName, birthday, email, city, address, cellphone string) error {
+	client, err := domain.NewClient(
+		uuid,
+		domain.WithAccount(email, cellphone),
+		domain.WithLocation(city, address),
+		domain.WithPersonalInformation(name, lastName, birthday),
+	)
+	if err != nil {
+		return err
+	}
+	return s.clientRepository.CreateTemporal(ctx, client)
+}
+
 func (s AccountService) FindClientByID(ctx context.Context, id string) (domain.Client, error) {
 	return s.clientRepository.Find(ctx, id)
 }
@@ -52,6 +65,7 @@ func (s AccountService) UpdateClientByID(ctx context.Context, uuid, name, lastNa
 	}
 	return s.clientRepository.Update(ctx, uuid, client)
 }
+
 func (s AccountService) CreateAccount(ctx context.Context, id, identifier, password, accountType, clientID string) (*security.TokenDetails, error) {
 	account, err := domain.NewAccount(
 		domain.WithAccountID(id),

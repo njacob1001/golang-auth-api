@@ -28,6 +28,20 @@ func (_m *ClientRepository) Create(ctx context.Context, client domain.Client) er
 	return r0
 }
 
+// CreateTemporalClient provides a mock function with given fields: ctx, client
+func (_m *ClientRepository) CreateTemporalClient(ctx context.Context, client domain.Client) error {
+	ret := _m.Called(ctx, client)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, domain.Client) error); ok {
+		r0 = rf(ctx, client)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // Delete provides a mock function with given fields: ctx, clientID
 func (_m *ClientRepository) Delete(ctx context.Context, clientID string) error {
 	ret := _m.Called(ctx, clientID)

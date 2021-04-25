@@ -53,3 +53,29 @@ func CreateClient(accountService service.AccountService, validate *validator.Val
 
 	}
 }
+
+func CreateTemporalClient(accountService service.AccountService, validate *validator.Validate) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
+		var req createRequest
+
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		if err := validate.Struct(req); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		err := accountService.CreateTemporalClient(ctx, req.ID, req.Name, req.LastName, req.BirthDay, req.Email, req.City, req.Address, req.Cellphone)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
+		w.WriteHeader(http.StatusCreated)
+		return
+	}
+}

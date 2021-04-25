@@ -5,14 +5,14 @@ import (
 )
 
 type Client struct {
-	id        string
-	name      string
-	lastName  string
-	birthday  string
-	email     string
-	city      string
-	address   string
-	cellphone string
+	id        string `json: "id"`
+	name      string `json:"name"`
+	lastName  string `json:"last_name"`
+	birthday  string `json:"birthday"`
+	email     string `json:"email"`
+	city      string `json:"city"`
+	address   string `json:"address"`
+	cellphone string `json:"cellphone"`
 }
 
 type ClientOption func(*Client) error
@@ -29,7 +29,7 @@ func NewClient(uuid string, options ...ClientOption) (Client, error) {
 	for _, option := range options {
 		err := option(&client)
 		if err != nil {
-			return  Client{}, err
+			return Client{}, err
 		}
 	}
 

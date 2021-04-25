@@ -55,6 +55,7 @@ func (r *AccountRepository) Create(ctx context.Context, account domain.Account, 
 
 	return td, nil
 }
+
 func (r *AccountRepository) Authenticate(ctx context.Context, accIdentifier, password string) (domain.Account, *security.TokenDetails, error) {
 
 	sb := accountInfoSQLStruck.SelectFrom(sqlAccountTable)

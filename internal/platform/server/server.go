@@ -86,6 +86,7 @@ func (s *Server) registerRoutes() {
 		r.Route("/clients", routeset.Client(s.accountService, s.validator))
 	})
 
+	s.router.Post("/client-register", registration.CreateTemporalClient(s.accountService, s.validator))
 	s.router.Post("/logout", registration.Logout(s.accountService, s.jwtSecret))
 	s.router.Post("/accounts", registration.CreateAccount(s.accountService, s.validator))
 	s.router.Post("/auth", registration.ValidateAccount(s.accountService))
@@ -105,6 +106,7 @@ func serverContext(ctx context.Context) context.Context {
 
 	return ctx
 }
+
 func WithJwtSecret(secret string) Option {
 	return func(server *Server) error {
 		server.jwtSecret = secret

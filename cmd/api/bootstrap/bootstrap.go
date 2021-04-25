@@ -37,7 +37,7 @@ func Run() error {
 		DB:       cfg.RdbIndex,
 	})
 
-	clientRepository := postgres.NewClientRepository(db, cfg.DbTimeout)
+	clientRepository := postgres.NewClientRepository(db, cfg.DbTimeout, rdb)
 	accountRepository := postgres.NewAccountRepository(db, cfg.DbTimeout, cfg.JwtSecret, rdb)
 
 	accountService := service.NewAccountService(accountRepository, clientRepository)
