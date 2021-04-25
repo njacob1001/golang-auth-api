@@ -131,7 +131,7 @@ func (r *ClientRepository) CreateTemporal(ctx context.Context, client domain.Cli
 		Address:   client.Address(),
 		Birthday:  client.BirthDay(),
 	}
-	
+
 	j, err := json.Marshal(c)
 
 	if err != nil {

@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/go-redis/redis/v8"
@@ -32,18 +33,25 @@ func NewAccountRepository(db *sql.DB, dbTimeout time.Duration, jwtSecret string,
 }
 
 func (r *AccountRepository) Create(ctx context.Context, account domain.Account, clientID string) (*security.TokenDetails, error) {
-	query, args := accountSQLStruck.InsertInto(sqlAccountTable, sqlAccount{
-		ID:          account.ID(),
-		Identifier:  account.Identifier(),
-		Password:    account.Password(),
-		AccountType: account.AccountType(),
-		ClientID: clientID,
-	}).Build()
-
 	ctxTimeout, cancel := context.WithTimeout(ctx, r.dbTimeout)
 	defer cancel()
 
-	_, err := r.db.ExecContext(ctxTimeout, query, args...)
+	bc, err := r.rdb.Get(ctxTimeout, clientID).Result()
+	if err != nil {
+		return nil, fmt.Errorf("error trying to recover client data: %v", err)
+	}
+
+	var c sqlClient
+	if err := json.Unmarshal([]byte(bc), &c); err != nil {
+		return nil, fmt.Errorf("error trying to recover client data: %v", err)
+	}
+
+	createClientQuery := "INSERT INTO clients (id, name, last_name, birth_day, email, city, address, cellphone) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)"
+	createAccountQuery := "INSERT INTO accounts (id, identifier, password, type_id, client_id) VALUES ($9, $10, $11, $12, $13)"
+
+	query := fmt.Sprintf("WITH new_client as (%s) %s", createClientQuery, createAccountQuery)
+
+	_, err = r.db.ExecContext(ctxTimeout, query, c.ID, c.Name, c.LastName, c.Birthday, c.Email, c.City, c.Address, c.Cellphone, account.ID(), account.Identifier(), account.Password(), account.AccountType(), c.ID)
 	if err != nil {
 		return nil, fmt.Errorf("error trying to persist account on database: %v", err)
 	}
