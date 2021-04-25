@@ -28,8 +28,8 @@ func (_m *ClientRepository) Create(ctx context.Context, client domain.Client) er
 	return r0
 }
 
-// CreateTemporalClient provides a mock function with given fields: ctx, client
-func (_m *ClientRepository) CreateTemporalClient(ctx context.Context, client domain.Client) error {
+// CreateTemporal provides a mock function with given fields: ctx, client
+func (_m *ClientRepository) CreateTemporal(ctx context.Context, client domain.Client) error {
 	ret := _m.Called(ctx, client)
 
 	var r0 error
