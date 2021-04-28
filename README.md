@@ -1,5 +1,12 @@
 # Rumm api
 
+
+![Tests and build](https://github.com/njacob1001/rumm-api-alpha/actions/workflows/go.yml/badge.svg?branch=master)
+![Tests and build](https://github.com/njacob1001/rumm-api-alpha/actions/workflows/go.yml/badge.svg?branch=develop)
+
+
+
+
 API for clients data management
 
 For *local development* create  a `.env.deleopment` file en then run:
