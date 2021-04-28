@@ -1,7 +1,7 @@
 # Rumm api
 
 
-![Tests and build](https://github.com/njacob1001/rumm-api-alpha/actions/workflows/go.yml/badge.svg?branch=master)
+![Tests and build](https://github.com/njacob1001/rumm-api-alpha/actions/workflows/master.yml/badge.svg?branch=master)
 ![Tests and build](https://github.com/njacob1001/rumm-api-alpha/actions/workflows/develop.yml/badge.svg?branch=develop)
 
 
