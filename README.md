@@ -15,6 +15,12 @@ For *local development* create  a `.env.deleopment` file en then run:
 make run
 ```
 
+### Test project
+
+```shell
+make test
+```
+
 for deploy in docker container create a `.env` file en then run:
 
 ```shell
