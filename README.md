@@ -9,7 +9,7 @@
 
 API for clients data management
 
-For *local development* create  a `.env.deleopment` file en then run:
+For *local development* create  a `.env.delopment` file en then run:
 
 ```shell
 make run
