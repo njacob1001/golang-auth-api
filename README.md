@@ -1,6 +1,6 @@
 # Rumm api
 
-
+[![GitHub go.mod Go version of a Go module](https://img.shields.io/github/go-mod/go-version/njacob1001/go-hexagonal-baseline)](https://github.com/njacob1001/rumm-api-alpha)
 ![Tests and build master](https://github.com/njacob1001/rumm-api-alpha/actions/workflows/master.yml/badge.svg)
 ![Tests and build develop](https://github.com/njacob1001/rumm-api-alpha/actions/workflows/develop.yml/badge.svg)
 
