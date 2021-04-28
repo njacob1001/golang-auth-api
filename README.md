@@ -1,7 +1,9 @@
 # Rumm api
 
-
+Master branch: 
 ![Tests and build](https://github.com/njacob1001/rumm-api-alpha/actions/workflows/go.yml/badge.svg?branch=master)
+
+Develop branch: 
 ![Tests and build](https://github.com/njacob1001/rumm-api-alpha/actions/workflows/go.yml/badge.svg?branch=develop)
 
 
