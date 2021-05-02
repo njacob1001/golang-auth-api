@@ -86,12 +86,13 @@ func (s *Server) registerRoutes() {
 		r.Route("/clients", routeset.Client(s.accountService, s.validator))
 	})
 
-	s.router.Post("/client-register", registration.CreateTemporalClient(s.accountService, s.validator))
-	s.router.Post("/logout", registration.Logout(s.accountService, s.jwtSecret))
-	s.router.Post("/accounts", registration.CreateAccount(s.accountService, s.validator))
-	s.router.Post("/auth", registration.ValidateAccount(s.accountService))
-	s.router.Post("/refresh", registration.RefreshToken(s.accountService))
-
+	s.router.Group(func(r chi.Router) {
+		s.router.Post("/client", registration.CreateTemporalClient(s.accountService, s.validator))
+		s.router.Post("/logout", registration.Logout(s.accountService, s.jwtSecret))
+		s.router.Post("/account", registration.CreateAccount(s.accountService, s.validator))
+		s.router.Post("/login", registration.ValidateAccount(s.accountService))
+		s.router.Post("/refresh", registration.RefreshToken(s.accountService))
+	})
 }
 
 
@@ -143,7 +144,7 @@ func WithRedis(rdb *redis.Client) Option {
 		return nil
 	}
 }
-func WithValidator (v *validator.Validate) Option {
+func WithValidator(v *validator.Validate) Option {
 	return func(server *Server) error {
 		server.validator = v
 		return nil

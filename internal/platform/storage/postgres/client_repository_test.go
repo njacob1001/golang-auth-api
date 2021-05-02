@@ -12,6 +12,7 @@ import (
 	"testing"
 	"time"
 )
+
 var redisServer *miniredis.Miniredis
 
 func mockRedis() *miniredis.Miniredis {
@@ -24,60 +25,64 @@ func mockRedis() *miniredis.Miniredis {
 	return s
 }
 
-func Test_ClientRepository_Save_RepositoryError(t *testing.T) {
-	UUID, Name, LastName, Birthday, Email, City, Address, Cellphone := "66021013-a0ce-4104-b29f-329686825aeb", "test", "test", "2020-01-01", "test", "test", "test", "testing"
+func TestClientRepository(t *testing.T) {
 
-	client, err := domain.NewClient(UUID,
-		domain.WithPersonalInformation(Name, LastName, Birthday),
-		domain.WithLocation(City, Address),
-		domain.WithAccount(Email, Cellphone))
-	require.NoError(t, err)
+	t.Run("Test ClientRepository Save RepositoryError", func(t *testing.T) {
+		UUID, Name, LastName, Birthday, Email, City, Address, Cellphone := "66021013-a0ce-4104-b29f-329686825aeb", "test", "test", "2020-01-01", "test", "test", "test", "testing"
 
-	db, sqlMock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
-	require.NoError(t, err)
+		client, err := domain.NewClient(UUID,
+			domain.WithPersonalInformation(Name, LastName, Birthday),
+			domain.WithLocation(City, Address),
+			domain.WithAccount(Email, Cellphone))
+		require.NoError(t, err)
 
-	redisServer = mockRedis()
-	redisClient := redis.NewClient(&redis.Options{
-		Addr: redisServer.Addr(),
+		db, sqlMock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+		require.NoError(t, err)
+
+		redisServer = mockRedis()
+		redisClient := redis.NewClient(&redis.Options{
+			Addr: redisServer.Addr(),
+		})
+
+		sqlMock.ExpectExec(
+			"INSERT INTO clients (id, name, last_name, birth_day, email, city, address, cellphone) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
+		).WithArgs(UUID, Name, LastName, Birthday, Email, City, Address, Cellphone).WillReturnError(errors.New("something-failed"))
+
+		repo := NewClientRepository(db, 5*time.Second, redisClient)
+
+		err = repo.Create(context.Background(), client)
+
+		assert.NoError(t, sqlMock.ExpectationsWereMet())
+		assert.Error(t, err)
 	})
 
-	sqlMock.ExpectExec(
-		"INSERT INTO clients (id, name, last_name, birth_day, email, city, address, cellphone) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
-	).WithArgs(UUID, Name, LastName, Birthday, Email, City, Address, Cellphone).WillReturnError(errors.New("something-failed"))
+	t.Run("Test ClientRepository Save RepositorySucceed", func(t *testing.T) {
+		UUID, Name, LastName, Birthday, Email, City, Address, Cellphone := "66021013-a0ce-4104-b29f-329686825aeb", "test", "test", "2020-01-01", "test", "test", "test", "testing"
 
-	repo := NewClientRepository(db, 5*time.Second, redisClient)
+		client, err := domain.NewClient(UUID,
+			domain.WithPersonalInformation(Name, LastName, Birthday),
+			domain.WithLocation(City, Address),
+			domain.WithAccount(Email, Cellphone))
+		require.NoError(t, err)
 
-	err = repo.Create(context.Background(), client)
+		db, sqlMock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+		require.NoError(t, err)
 
-	assert.NoError(t, sqlMock.ExpectationsWereMet())
-	assert.Error(t, err)
-}
+		redisServer = mockRedis()
+		redisClient := redis.NewClient(&redis.Options{
+			Addr: redisServer.Addr(),
+		})
 
-func Test_ClientRepository_Save_RepositorySucceed(t *testing.T) {
-	UUID, Name, LastName, Birthday, Email, City, Address, Cellphone := "66021013-a0ce-4104-b29f-329686825aeb", "test", "test", "2020-01-01", "test", "test", "test", "testing"
+		sqlMock.ExpectExec(
+			"INSERT INTO clients (id, name, last_name, birth_day, email, city, address, cellphone) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
+		).WithArgs(UUID, Name, LastName, Birthday, Email, City, Address, Cellphone).WillReturnResult(sqlmock.NewResult(0, 1))
 
-	client, err := domain.NewClient(UUID,
-		domain.WithPersonalInformation(Name, LastName, Birthday),
-		domain.WithLocation(City, Address),
-		domain.WithAccount(Email, Cellphone))
-	require.NoError(t, err)
+		repo := NewClientRepository(db, 5*time.Second, redisClient)
 
-	db, sqlMock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
-	require.NoError(t, err)
+		err = repo.Create(context.Background(), client)
 
-	redisServer = mockRedis()
-	redisClient := redis.NewClient(&redis.Options{
-		Addr: redisServer.Addr(),
+		assert.NoError(t, sqlMock.ExpectationsWereMet())
+		assert.NoError(t, err)
 	})
 
-	sqlMock.ExpectExec(
-		"INSERT INTO clients (id, name, last_name, birth_day, email, city, address, cellphone) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
-	).WithArgs(UUID, Name, LastName, Birthday, Email, City, Address, Cellphone).WillReturnResult(sqlmock.NewResult(0, 1))
-
-	repo := NewClientRepository(db, 5*time.Second, redisClient)
-
-	err = repo.Create(context.Background(), client)
-
-	assert.NoError(t, sqlMock.ExpectationsWereMet())
-	assert.NoError(t, err)
 }
