@@ -1,11 +1,24 @@
 # Rumm api
 
+[![GitHub go.mod Go version of a Go module](https://img.shields.io/github/go-mod/go-version/njacob1001/go-hexagonal-baseline)](https://github.com/njacob1001/rumm-api-alpha)
+![Tests and build master](https://github.com/njacob1001/rumm-api-alpha/actions/workflows/master.yml/badge.svg)
+![Tests and build develop](https://github.com/njacob1001/rumm-api-alpha/actions/workflows/develop.yml/badge.svg)
+
+
+
+
 API for clients data management
 
-For *local development* create  a `.env.deleopment` file en then run:
+For *local development* create  a `.env.delopment` file en then run:
 
 ```shell
 make run
+```
+
+### Test project
+
+```shell
+make test
 ```
 
 for deploy in docker container create a `.env` file en then run:
