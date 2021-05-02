@@ -32,26 +32,44 @@ func NewAccountRepository(db *sql.DB, dbTimeout time.Duration, jwtSecret string,
 	}
 }
 
-func (r *AccountRepository) Create(ctx context.Context, account domain.Account, clientID string) (*security.TokenDetails, error) {
+func (r AccountRepository) GetTemporalClient(ctx context.Context, storeKey string) (domain.Client, error) {
+	ctxTimeout, cancel := context.WithTimeout(ctx, r.dbTimeout)
+	defer cancel()
+	bc, err := r.rdb.Get(ctxTimeout, storeKey).Result()
+	if err != nil {
+		return domain.Client{}, fmt.Errorf("error trying to recover client data: %v", err)
+	}
+	var c domain.Client
+
+	if err := json.Unmarshal([]byte(bc), &c); err != nil {
+		return c, fmt.Errorf("error trying to recover client data: %v", err)
+	}
+
+	return c, nil
+}
+
+func (r *AccountRepository) Create(ctx context.Context, account domain.Account, client domain.Client) (*security.TokenDetails, error) {
 	ctxTimeout, cancel := context.WithTimeout(ctx, r.dbTimeout)
 	defer cancel()
 
-	bc, err := r.rdb.Get(ctxTimeout, clientID).Result()
-	if err != nil {
-		return nil, fmt.Errorf("error trying to recover client data: %v", err)
+	c := sqlClient{
+		ID: client.ID(),
+		Cellphone: client.Cellphone(),
+		Address: client.Address(),
+		City: client.City(),
+		Email: client.Email(),
+		LastName: client.LastName(),
+		Name: client.Name(),
+		Birthday: client.BirthDay(),
 	}
 
-	var c sqlClient
-	if err := json.Unmarshal([]byte(bc), &c); err != nil {
-		return nil, fmt.Errorf("error trying to recover client data: %v", err)
-	}
 
 	createClientQuery := "INSERT INTO clients (id, name, last_name, birth_day, email, city, address, cellphone) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)"
 	createAccountQuery := "INSERT INTO accounts (id, identifier, password, type_id, client_id) VALUES ($9, $10, $11, $12, $13)"
 
 	query := fmt.Sprintf("WITH new_client as (%s) %s", createClientQuery, createAccountQuery)
 
-	_, err = r.db.ExecContext(ctxTimeout, query, c.ID, c.Name, c.LastName, c.Birthday, c.Email, c.City, c.Address, c.Cellphone, account.ID(), account.Identifier(), account.Password(), account.AccountType(), c.ID)
+	_, err := r.db.ExecContext(ctxTimeout, query, c.ID, c.Name, c.LastName, c.Birthday, c.Email, c.City, c.Address, c.Cellphone, account.ID(), account.Identifier(), account.Password(), account.AccountType(), c.ID)
 	if err != nil {
 		return nil, fmt.Errorf("error trying to persist account on database: %v", err)
 	}

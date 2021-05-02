@@ -17,10 +17,11 @@ type ClientRepository interface {
 //go:generate mockery --case=snake --outpkg=storagemocks --output=../../../mocks/mockups --name=ClientRepository
 
 type AccountRepository interface {
-	Create(ctx context.Context, account domain.Account, clientID string) (*security.TokenDetails, error)
+	Create(ctx context.Context, account domain.Account, client domain.Client) (*security.TokenDetails, error)
 	Authenticate(ctx context.Context, accIdentifier, password string) (domain.Account, *security.TokenDetails, error)
 	Logout(ctx context.Context, accessUuid string) error
 	Refresh(ctx context.Context, token string) (*security.TokenDetails, error)
+	GetTemporalClient(ctx context.Context, storeKey string) (domain.Client, error)
 }
 
 //go:generate mockery --case=snake --outpkg=storagemocks --output=../../../mocks/mockups --name=AccountRepository

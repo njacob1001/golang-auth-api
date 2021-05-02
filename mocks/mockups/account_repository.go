@@ -46,13 +46,13 @@ func (_m *AccountRepository) Authenticate(ctx context.Context, accIdentifier str
 	return r0, r1, r2
 }
 
-// Create provides a mock function with given fields: ctx, account, clientID
-func (_m *AccountRepository) Create(ctx context.Context, account domain.Account, clientID string) (*security.TokenDetails, error) {
-	ret := _m.Called(ctx, account, clientID)
+// Create provides a mock function with given fields: ctx, account, client
+func (_m *AccountRepository) Create(ctx context.Context, account domain.Account, client domain.Client) (*security.TokenDetails, error) {
+	ret := _m.Called(ctx, account, client)
 
 	var r0 *security.TokenDetails
-	if rf, ok := ret.Get(0).(func(context.Context, domain.Account, string) *security.TokenDetails); ok {
-		r0 = rf(ctx, account, clientID)
+	if rf, ok := ret.Get(0).(func(context.Context, domain.Account, domain.Client) *security.TokenDetails); ok {
+		r0 = rf(ctx, account, client)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*security.TokenDetails)
@@ -60,8 +60,29 @@ func (_m *AccountRepository) Create(ctx context.Context, account domain.Account,
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, domain.Account, string) error); ok {
-		r1 = rf(ctx, account, clientID)
+	if rf, ok := ret.Get(1).(func(context.Context, domain.Account, domain.Client) error); ok {
+		r1 = rf(ctx, account, client)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetTemporalClient provides a mock function with given fields: ctx, storeKey
+func (_m *AccountRepository) GetTemporalClient(ctx context.Context, storeKey string) (domain.Client, error) {
+	ret := _m.Called(ctx, storeKey)
+
+	var r0 domain.Client
+	if rf, ok := ret.Get(0).(func(context.Context, string) domain.Client); ok {
+		r0 = rf(ctx, storeKey)
+	} else {
+		r0 = ret.Get(0).(domain.Client)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, storeKey)
 	} else {
 		r1 = ret.Error(1)
 	}

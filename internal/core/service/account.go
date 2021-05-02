@@ -19,6 +19,7 @@ func NewAccountService(accountRepository port.AccountRepository, clientRepositor
 	}
 }
 
+
 func (s AccountService) CreateClient(ctx context.Context, uuid, name, lastName, birthday, email, city, address, cellphone string) error {
 	client, err := domain.NewClient(
 		uuid,
@@ -77,7 +78,12 @@ func (s AccountService) CreateAccount(ctx context.Context, id, identifier, passw
 		return nil, err
 	}
 
-	return s.accountRepository.Create(ctx, account, clientID)
+	client, err := s.accountRepository.GetTemporalClient(ctx, clientID)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.accountRepository.Create(ctx, account, client)
 }
 
 func (s AccountService) Authenticate(ctx context.Context, accIdentifier, password string) (domain.Account, *security.TokenDetails, error) {
