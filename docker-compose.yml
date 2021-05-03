@@ -12,7 +12,7 @@ services:
       - portainer:/data
   api:
     container_name: api
-    image: rumm-api:alplha
+    image: rumm-api-auth:alplha
     build: .
     env_file: .env
     ports:
