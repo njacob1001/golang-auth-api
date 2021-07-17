@@ -25,19 +25,19 @@ type TokenDetails struct {
 var ErrInvalidClientUUID = errors.New("hashing generator error")
 var ErrTokenCreator = errors.New("can't create token")
 
-func GetHash(password string) (string, error) {
+func GetHash(password string) ([]byte, error) {
 	str := []byte(password)
 
 	hashStr, err := bcrypt.GenerateFromPassword(str, bcrypt.DefaultCost)
 	if err != nil {
-		return "", fmt.Errorf("%w", ErrInvalidClientUUID)
+		return []byte{}, fmt.Errorf("%w", ErrInvalidClientUUID)
 	}
 
-	return string(hashStr), nil
+	return hashStr, nil
 }
 
-func ValidatePassword(hash, password string) (bool, error) {
-	bch := []byte(hash)
+func ValidatePassword(hash []byte, password string) (bool, error) {
+	bch := hash
 	bcp := []byte(password)
 	err := bcrypt.CompareHashAndPassword(bch, bcp)
 

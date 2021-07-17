@@ -11,7 +11,7 @@ type Account struct {
 	id           string
 	accountType  string
 	identifier   string
-	password     string
+	password     []byte
 }
 
 var ErrInvalidClientUUID = errors.New("invalid password")
@@ -59,7 +59,7 @@ func WithAccountHashedPass(password string) AccountOption {
 		if password == "" {
 			return ErrInvalidClientUUID
 		}
-		a.password = password
+		a.password = []byte(password)
 		return nil
 	}
 }
@@ -84,7 +84,7 @@ func (a Account) ID() string {
 	return a.id
 }
 
-func (a Account) Password() string {
+func (a Account) Password() []byte {
 	return a.password
 }
 
