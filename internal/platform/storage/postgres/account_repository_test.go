@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"rumm-api/internal/core/domain"
+	"rumm-api/kit/security"
 	"testing"
 	"time"
 )
@@ -16,7 +17,18 @@ import (
 func TestAccountRepository(t *testing.T) {
 	t.Run("Should not create account correctly", func(t *testing.T) {
 		id, accountType, identifier, password := "b157588e-75fe-40a4-b405-a7eed0c21663", "822d9c35-e508-4b23-ab9d-58336df8df19", "3213432233", "123345"
-		account, err := domain.NewAccount(domain.WithAccountID(id), domain.WithAccountIdentifier(identifier), domain.WithAccountPass(password), domain.WithAccountType(accountType))
+
+		hash, err := security.GetHash(password)
+		require.NoError(t, err)
+
+		account := domain.Account{
+			ID:         id,
+			Identifier: identifier,
+			Password:   hash,
+			Type:       accountType,
+		}
+
+
 		require.NoError(t, err)
 		cid, name, lastName, birthday, email, city, address, cellphone := "66021013-a0ce-4104-b29f-329686825aeb", "test", "test", "2020-01-01", "test", "test", "test", "testing"
 		c, err := domain.NewClient(cid, domain.WithPersonalInformation(name, lastName, birthday), domain.WithLocation(city, address), domain.WithAccount(email, cellphone))
@@ -45,7 +57,17 @@ func TestAccountRepository(t *testing.T) {
 
 	t.Run("Should create account correctly", func(t *testing.T) {
 		id, accountType, identifier, password := "b157588e-75fe-40a4-b405-a7eed0c21663", "822d9c35-e508-4b23-ab9d-58336df8df19", "3213432233", "123345"
-		account, err := domain.NewAccount(domain.WithAccountID(id), domain.WithAccountIdentifier(identifier), domain.WithAccountPass(password), domain.WithAccountType(accountType))
+
+		hash, err := security.GetHash(password)
+		require.NoError(t, err)
+
+		account := domain.Account{
+			ID:         id,
+			Identifier: identifier,
+			Password:   hash,
+			Type:       accountType,
+		}
+
 		require.NoError(t, err)
 		cid, name, lastName, birthday, email, city, address, cellphone := "66021013-a0ce-4104-b29f-329686825aeb", "test", "test", "2020-01-01", "test", "test", "test", "testing"
 		c, err := domain.NewClient(cid, domain.WithPersonalInformation(name, lastName, birthday), domain.WithLocation(city, address), domain.WithAccount(email, cellphone))
@@ -73,10 +95,10 @@ func TestAccountRepository(t *testing.T) {
 			c.City(),
 			c.Address(),
 			c.Cellphone(),
-			account.ID(),
-			account.Identifier(),
-			account.Password(),
-			account.AccountType(),
+			account.ID,
+			account.Identifier,
+			account.Password,
+			account.Type,
 			c.ID(),
 		).WillReturnResult(sqlmock.NewResult(0, 1))
 

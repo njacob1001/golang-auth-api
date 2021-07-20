@@ -53,28 +53,27 @@ func (r *AccountRepository) Create(ctx context.Context, account domain.Account, 
 	defer cancel()
 
 	c := sqlClient{
-		ID: client.ID(),
+		ID:        client.ID(),
 		Cellphone: client.Cellphone(),
-		Address: client.Address(),
-		City: client.City(),
-		Email: client.Email(),
-		LastName: client.LastName(),
-		Name: client.Name(),
-		Birthday: client.BirthDay(),
+		Address:   client.Address(),
+		City:      client.City(),
+		Email:     client.Email(),
+		LastName:  client.LastName(),
+		Name:      client.Name(),
+		Birthday:  client.BirthDay(),
 	}
-
 
 	createClientQuery := "INSERT INTO clients (id, name, last_name, birth_day, email, city, address, cellphone) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)"
 	createAccountQuery := "INSERT INTO accounts (id, identifier, password, type_id, client_id) VALUES ($9, $10, $11, $12, $13)"
 
 	query := fmt.Sprintf("WITH new_client as (%s) %s", createClientQuery, createAccountQuery)
 
-	_, err := r.db.ExecContext(ctxTimeout, query, c.ID, c.Name, c.LastName, c.Birthday, c.Email, c.City, c.Address, c.Cellphone, account.ID(), account.Identifier(), account.Password(), account.AccountType(), c.ID)
+	_, err := r.db.ExecContext(ctxTimeout, query, c.ID, c.Name, c.LastName, c.Birthday, c.Email, c.City, c.Address, c.Cellphone, account.ID, account.Identifier, account.Password, account.Type, c.ID)
 	if err != nil {
 		return nil, fmt.Errorf("error trying to persist account on database: %v", err)
 	}
 
-	td, err := security.CreateToken(r.jwtSecret, account.ID())
+	td, err := security.CreateToken(r.jwtSecret, account.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -97,13 +96,17 @@ func (r *AccountRepository) Authenticate(ctx context.Context, accIdentifier, pas
 		return domain.Account{}, nil, fmt.Errorf("error trying to find account on database, account doesn't exist: %v", err)
 	}
 
-	account, err := domain.NewAccount(
-		domain.WithAccountID(acc.ID),
-		domain.WithAccountIdentifier(acc.Identifier),
-		domain.WithAccountHashedPass(acc.Password),
-		domain.WithAccountType(acc.AccountID))
+	hash, err := security.GetHash(password)
+
 	if err != nil {
 		return domain.Account{}, nil, err
+	}
+
+	account := domain.Account{
+		ID:         acc.ID,
+		Identifier: acc.Identifier,
+		Password:   hash,
+		Type:       acc.AccountID,
 	}
 
 	isValid, err := account.ValidatePassword(password)
@@ -112,12 +115,12 @@ func (r *AccountRepository) Authenticate(ctx context.Context, accIdentifier, pas
 		return domain.Account{}, nil, err
 	}
 	if isValid {
-		td, err := security.CreateToken(r.jwtSecret, account.ID())
+		td, err := security.CreateToken(r.jwtSecret, account.ID)
 		if err != nil {
 			return domain.Account{}, nil, err
 		}
 
-		if err := security.CreateAuth(ctxTimeout, account.ID(), td, r.rdb); err != nil {
+		if err := security.CreateAuth(ctxTimeout, account.ID, td, r.rdb); err != nil {
 			return domain.Account{}, nil, err
 		}
 

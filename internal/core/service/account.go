@@ -68,11 +68,19 @@ func (s AccountService) UpdateClientByID(ctx context.Context, uuid, name, lastNa
 }
 
 func (s AccountService) CreateAccount(ctx context.Context, id, identifier, password, accountType, clientID string) (*security.TokenDetails, error) {
-	account, err := domain.NewAccount(
-		domain.WithAccountID(id),
-		domain.WithAccountPass(password),
-		domain.WithAccountIdentifier(identifier),
-		domain.WithAccountType(accountType))
+
+	hash, err := security.GetHash(password)
+
+	if err != nil {
+		return nil, err
+	}
+
+	account := domain.Account{
+		ID: id,
+		Identifier: identifier,
+		Type: accountType,
+		Password: hash,
+	}
 
 	if err != nil {
 		return nil, err

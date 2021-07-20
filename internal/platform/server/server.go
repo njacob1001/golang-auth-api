@@ -82,7 +82,6 @@ func (s *Server) registerRoutes() {
 	// protected endpoints
 	s.router.Group(func(r chi.Router) {
 		r.Use(apimiddleware.JwtAuth(s.jwtSecret, s.rdb))
-
 		r.Route("/clients", routeset.Client(s.accountService, s.validator))
 	})
 
@@ -107,7 +106,6 @@ func serverContext(ctx context.Context) context.Context {
 
 	return ctx
 }
-
 func WithJwtSecret(secret string) Option {
 	return func(server *Server) error {
 		server.jwtSecret = secret
