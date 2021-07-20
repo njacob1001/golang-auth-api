@@ -45,14 +45,14 @@ func FindClient(accountService service.AccountService) http.HandlerFunc {
 		}
 
 		response := clientResponse{
-			ID: client.ID(),
-			Name: client.Name(),
-			LastName: client.LastName(),
-			Birthday: client.BirthDay(),
-			Email: client.Email(),
-			City: client.City(),
-			Address: client.Address(),
-			Cellphone: client.Cellphone(),
+			ID: client.ID,
+			Name: client.Name,
+			LastName: client.LastName,
+			Birthday: client.Birthday,
+			Email: client.Email,
+			City: client.City,
+			Address: client.Address,
+			Cellphone: client.Cellphone,
 		}
 
 		j, err := json.Marshal(response)

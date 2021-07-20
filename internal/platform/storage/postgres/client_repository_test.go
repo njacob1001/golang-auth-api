@@ -30,11 +30,16 @@ func TestClientRepository(t *testing.T) {
 	t.Run("Test ClientRepository Save RepositoryError", func(t *testing.T) {
 		UUID, Name, LastName, Birthday, Email, City, Address, Cellphone := "66021013-a0ce-4104-b29f-329686825aeb", "test", "test", "2020-01-01", "test", "test", "test", "testing"
 
-		client, err := domain.NewClient(UUID,
-			domain.WithPersonalInformation(Name, LastName, Birthday),
-			domain.WithLocation(City, Address),
-			domain.WithAccount(Email, Cellphone))
-		require.NoError(t, err)
+		client := domain.Client{
+			ID:        UUID,
+			Name:      Name,
+			LastName:  LastName,
+			Birthday:  Birthday,
+			City:      City,
+			Address:   Address,
+			Email:     Email,
+			Cellphone: Cellphone,
+		}
 
 		db, sqlMock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
 		require.NoError(t, err)
@@ -59,11 +64,16 @@ func TestClientRepository(t *testing.T) {
 	t.Run("Test ClientRepository Save RepositorySucceed", func(t *testing.T) {
 		UUID, Name, LastName, Birthday, Email, City, Address, Cellphone := "66021013-a0ce-4104-b29f-329686825aeb", "test", "test", "2020-01-01", "test", "test", "test", "testing"
 
-		client, err := domain.NewClient(UUID,
-			domain.WithPersonalInformation(Name, LastName, Birthday),
-			domain.WithLocation(City, Address),
-			domain.WithAccount(Email, Cellphone))
-		require.NoError(t, err)
+		client := domain.Client{
+			ID:        UUID,
+			Name:      Name,
+			LastName:  LastName,
+			Birthday:  Birthday,
+			City:      City,
+			Address:   Address,
+			Email:     Email,
+			Cellphone: Cellphone,
+		}
 
 		db, sqlMock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
 		require.NoError(t, err)

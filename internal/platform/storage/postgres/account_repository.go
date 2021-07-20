@@ -53,14 +53,14 @@ func (r *AccountRepository) Create(ctx context.Context, account domain.Account, 
 	defer cancel()
 
 	c := sqlClient{
-		ID:        client.ID(),
-		Cellphone: client.Cellphone(),
-		Address:   client.Address(),
-		City:      client.City(),
-		Email:     client.Email(),
-		LastName:  client.LastName(),
-		Name:      client.Name(),
-		Birthday:  client.BirthDay(),
+		ID:        client.ID,
+		Cellphone: client.Cellphone,
+		Address:   client.Address,
+		City:      client.City,
+		Email:     client.Email,
+		LastName:  client.LastName,
+		Name:      client.Name,
+		Birthday:  client.Birthday,
 	}
 
 	createClientQuery := "INSERT INTO clients (id, name, last_name, birth_day, email, city, address, cellphone) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)"

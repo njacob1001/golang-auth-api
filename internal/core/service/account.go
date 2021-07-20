@@ -19,30 +19,33 @@ func NewAccountService(accountRepository port.AccountRepository, clientRepositor
 	}
 }
 
-
 func (s AccountService) CreateClient(ctx context.Context, uuid, name, lastName, birthday, email, city, address, cellphone string) error {
-	client, err := domain.NewClient(
-		uuid,
-		domain.WithAccount(email, cellphone),
-		domain.WithLocation(city, address),
-		domain.WithPersonalInformation(name, lastName, birthday),
-	)
-	if err != nil {
-		return err
+
+	client := domain.Client{
+		ID:        uuid,
+		Name:      email,
+		LastName:  name,
+		Birthday:  birthday,
+		City:      city,
+		Address:   address,
+		Email:     email,
+		Cellphone: cellphone,
 	}
 	return s.clientRepository.Create(ctx, client)
 }
 
-func(s AccountService) CreateTemporalClient(ctx context.Context, uuid, name, lastName, birthday, email, city, address, cellphone string) error {
-	client, err := domain.NewClient(
-		uuid,
-		domain.WithAccount(email, cellphone),
-		domain.WithLocation(city, address),
-		domain.WithPersonalInformation(name, lastName, birthday),
-	)
-	if err != nil {
-		return err
+func (s AccountService) CreateTemporalClient(ctx context.Context, uuid, name, lastName, birthday, email, city, address, cellphone string) error {
+	client := domain.Client{
+		ID:        uuid,
+		Name:      email,
+		LastName:  name,
+		Birthday:  birthday,
+		City:      city,
+		Address:   address,
+		Email:     email,
+		Cellphone: cellphone,
 	}
+
 	return s.clientRepository.CreateTemporal(ctx, client)
 }
 
@@ -55,14 +58,15 @@ func (s AccountService) DeleteClientByID(ctx context.Context, clientID string) e
 }
 
 func (s AccountService) UpdateClientByID(ctx context.Context, uuid, name, lastName, birthday, email, city, address, cellphone string) error {
-	client, err := domain.NewClient(
-		uuid,
-		domain.WithAccount(email, cellphone),
-		domain.WithLocation(city, address),
-		domain.WithPersonalInformation(name, lastName, birthday),
-	)
-	if err != nil {
-		return err
+	client := domain.Client{
+		ID:        uuid,
+		Name:      email,
+		LastName:  name,
+		Birthday:  birthday,
+		City:      city,
+		Address:   address,
+		Email:     email,
+		Cellphone: cellphone,
 	}
 	return s.clientRepository.Update(ctx, uuid, client)
 }
@@ -76,10 +80,10 @@ func (s AccountService) CreateAccount(ctx context.Context, id, identifier, passw
 	}
 
 	account := domain.Account{
-		ID: id,
+		ID:         id,
 		Identifier: identifier,
-		Type: accountType,
-		Password: hash,
+		Type:       accountType,
+		Password:   hash,
 	}
 
 	if err != nil {

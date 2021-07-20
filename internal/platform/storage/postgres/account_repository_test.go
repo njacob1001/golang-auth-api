@@ -28,11 +28,19 @@ func TestAccountRepository(t *testing.T) {
 			Type:       accountType,
 		}
 
-
 		require.NoError(t, err)
 		cid, name, lastName, birthday, email, city, address, cellphone := "66021013-a0ce-4104-b29f-329686825aeb", "test", "test", "2020-01-01", "test", "test", "test", "testing"
-		c, err := domain.NewClient(cid, domain.WithPersonalInformation(name, lastName, birthday), domain.WithLocation(city, address), domain.WithAccount(email, cellphone))
-		require.NoError(t, err)
+
+		c := domain.Client{
+			ID:        cid,
+			Name:      name,
+			LastName:  lastName,
+			Birthday:  birthday,
+			City:      city,
+			Address:   address,
+			Email:     email,
+			Cellphone: cellphone,
+		}
 
 		db, sqlMock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
 		require.NoError(t, err)
@@ -70,7 +78,17 @@ func TestAccountRepository(t *testing.T) {
 
 		require.NoError(t, err)
 		cid, name, lastName, birthday, email, city, address, cellphone := "66021013-a0ce-4104-b29f-329686825aeb", "test", "test", "2020-01-01", "test", "test", "test", "testing"
-		c, err := domain.NewClient(cid, domain.WithPersonalInformation(name, lastName, birthday), domain.WithLocation(city, address), domain.WithAccount(email, cellphone))
+
+		c := domain.Client{
+			ID:        cid,
+			Name:      name,
+			LastName:  lastName,
+			Birthday:  birthday,
+			City:      city,
+			Address:   address,
+			Email:     email,
+			Cellphone: cellphone,
+		}
 
 		require.NoError(t, err)
 
@@ -87,19 +105,19 @@ func TestAccountRepository(t *testing.T) {
 		query := fmt.Sprintf("WITH new_client as (%s) %s", createClientQuery, createAccountQuery)
 
 		sqlMock.ExpectExec(query).WithArgs(
-			c.ID(),
-			c.Name(),
-			c.LastName(),
-			c.BirthDay(),
-			c.Email(),
-			c.City(),
-			c.Address(),
-			c.Cellphone(),
+			c.ID,
+			c.Name,
+			c.LastName,
+			c.Birthday,
+			c.Email,
+			c.City,
+			c.Address,
+			c.Cellphone,
 			account.ID,
 			account.Identifier,
 			account.Password,
 			account.Type,
-			c.ID(),
+			c.ID,
 		).WillReturnResult(sqlmock.NewResult(0, 1))
 
 		repo := NewAccountRepository(db, 5*time.Second, "", redisClient)
