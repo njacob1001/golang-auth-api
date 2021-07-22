@@ -3,7 +3,6 @@ package postgres
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/go-redis/redis/v8"
@@ -23,6 +22,11 @@ type AccountRepository struct {
 var accountSQLStruck = sqlbuilder.NewStruct(new(sqlAccount)).For(sqlbuilder.PostgreSQL)
 var accountInfoSQLStruck = sqlbuilder.NewStruct(new(accountInfo)).For(sqlbuilder.PostgreSQL)
 
+// TODO: remote For method and use a const instead of a var
+var accountTable = sqlbuilder.NewStruct(new(domain.Account)).For(sqlbuilder.PostgreSQL)
+var peopleTable = sqlbuilder.NewStruct(new(domain.Person)).For(sqlbuilder.PostgreSQL)
+var profileTable = sqlbuilder.NewStruct(new(domain.Profile)).For(sqlbuilder.PostgreSQL)
+
 func NewAccountRepository(db *sql.DB, dbTimeout time.Duration, jwtSecret string, rdb *redis.Client) *AccountRepository {
 	return &AccountRepository{
 		db:        db,
@@ -32,45 +36,23 @@ func NewAccountRepository(db *sql.DB, dbTimeout time.Duration, jwtSecret string,
 	}
 }
 
-func (r AccountRepository) GetTemporalClient(ctx context.Context, storeKey string) (domain.Client, error) {
-	ctxTimeout, cancel := context.WithTimeout(ctx, r.dbTimeout)
-	defer cancel()
-	bc, err := r.rdb.Get(ctxTimeout, storeKey).Result()
-	if err != nil {
-		return domain.Client{}, fmt.Errorf("error trying to recover client data: %v", err)
-	}
-	var c domain.Client
-
-	if err := json.Unmarshal([]byte(bc), &c); err != nil {
-		return c, fmt.Errorf("error trying to recover client data: %v", err)
-	}
-
-	return c, nil
-}
-
-func (r *AccountRepository) Create(ctx context.Context, account domain.Account, client domain.Client) (*security.TokenDetails, error) {
+func (r *AccountRepository) Create(ctx context.Context, account domain.Account, profile domain.Profile, person domain.Person) (*security.TokenDetails, error) {
 	ctxTimeout, cancel := context.WithTimeout(ctx, r.dbTimeout)
 	defer cancel()
 
-	c := sqlClient{
-		ID:        client.ID,
-		Cellphone: client.Cellphone,
-		Address:   client.Address,
-		City:      client.City,
-		Email:     client.Email,
-		LastName:  client.LastName,
-		Name:      client.Name,
-		Birthday:  client.Birthday,
+	query, args := peopleTable.InsertInto("people", person).Build()
+	if _, err := r.db.ExecContext(ctxTimeout, query, args...); err != nil {
+		return nil, fmt.Errorf("error trying to persist person on database: %v", err)
 	}
 
-	createClientQuery := "INSERT INTO clients (id, name, last_name, birth_day, email, city, address, cellphone) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)"
-	createAccountQuery := "INSERT INTO accounts (id, identifier, password, type_id, client_id) VALUES ($9, $10, $11, $12, $13)"
-
-	query := fmt.Sprintf("WITH new_client as (%s) %s", createClientQuery, createAccountQuery)
-
-	_, err := r.db.ExecContext(ctxTimeout, query, c.ID, c.Name, c.LastName, c.Birthday, c.Email, c.City, c.Address, c.Cellphone, account.ID, account.Identifier, account.Password, account.Type, c.ID)
-	if err != nil {
+	queryA, argsA := accountTable.InsertInto("accounts", account).Build()
+	if _, err := r.db.ExecContext(ctxTimeout, queryA, argsA...); err != nil {
 		return nil, fmt.Errorf("error trying to persist account on database: %v", err)
+	}
+
+	queryP, argsP := profileTable.InsertInto("profiles", profile).Build()
+	if _, err := r.db.ExecContext(ctxTimeout, queryP, argsP...); err != nil {
+		return nil, fmt.Errorf("error trying to persist profile on database: %v", err)
 	}
 
 	td, err := security.CreateToken(r.jwtSecret, account.ID)
@@ -106,7 +88,7 @@ func (r *AccountRepository) Authenticate(ctx context.Context, accIdentifier, pas
 		ID:         acc.ID,
 		Identifier: acc.Identifier,
 		Password:   hash,
-		Type:       acc.AccountID,
+		TypeID:     acc.AccountID,
 	}
 
 	isValid, err := account.ValidatePassword(password)

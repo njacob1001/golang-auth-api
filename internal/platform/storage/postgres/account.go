@@ -2,7 +2,11 @@ package postgres
 
 const (
 	sqlAccountTable = "accounts"
+	personAttr = "id, etag, name, id_type, id_number, last_name, cellphone, birth_date, email,country,city,address,photo"
+
 )
+
+
 
 type sqlAccount struct {
 	ID          string `db:"id"`
