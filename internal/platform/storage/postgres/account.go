@@ -1,12 +1,68 @@
 package postgres
 
+import "time"
+
 const (
 	sqlAccountTable = "accounts"
-	personAttr = "id, etag, name, id_type, id_number, last_name, cellphone, birth_date, email,country,city,address,photo"
-
 )
 
+type Profile struct {
+	ID        string `db:"id"`
+	Code      string `db:"code"`
+	IsActive  bool   `db:"is_active"`
+	DarkMode  bool   `db:"dark_mode"`
+	AccountID string `db:"account_id"`
+}
 
+type CreatorClientPerson struct {
+	ID        string    `db:"id"`
+	Name      string    `db:"name"`
+	IDType    string    `db:"id_type"`
+	IDNumber  string    `db:"id_number"`
+	LastName  string    `db:"last_name"`
+	Cellphone string    `db:"cellphone"`
+	BirthDate time.Time `db:"birth_date"`
+	Email     string    `db:"email"`
+	Country   string    `db:"country"`
+	City      string    `db:"city"`
+	Address   string    `db:"address"`
+	Photo     string    `db:"photo"`
+}
+
+type Person struct {
+	ID        string    `db:"id"`
+	Name      string    `db:"name"`
+	IDType    string    `db:"id_type"`
+	IDNumber  string    `db:"id_number"`
+	LastName  string    `db:"last_name"`
+	Cellphone string    `db:"cellphone"`
+	BirthDate time.Time `db:"birth_date"`
+	Email     string    `db:"email"`
+	Country   string    `db:"country"`
+	City      string    `db:"city"`
+	Address   string    `db:"address"`
+	Photo     string    `db:"photo"`
+	CompanyID string    `db:"company_id"`
+}
+
+type CreatorAccount struct {
+	ID         string `db:"id"`
+	Identifier string `db:"identifier"`
+	Password   string `db:"password"`
+	PersonID   string `db:"person_id"`
+	TypeID     string `db:"type_id"`
+}
+
+type Account struct {
+	ID            string    `db:"id"`
+	Identifier    string    `db:"identifier"`
+	Password      string    `db:"password"`
+	RequestLogin  bool      `db:"request_login"`
+	ResetPassword bool      `db:"reset_password"`
+	PersonID      string    `db:"person_id"`
+	TypeID        string    `db:"type_id"`
+	LastLogin     time.Time `db:"last_login"`
+}
 
 type sqlAccount struct {
 	ID          string `db:"id"`

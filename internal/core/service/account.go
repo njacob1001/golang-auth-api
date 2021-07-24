@@ -73,7 +73,7 @@ func (s AccountService) UpdateClientByID(ctx context.Context, uuid, name, lastNa
 
 func (s AccountService) CreateAccount(ctx context.Context, person domain.Person, account domain.Account, profile domain.Profile) (*security.TokenDetails, error) {
 
-	hash, err := security.GetHash(string(account.Password))
+	hash, err := security.GetHash(account.Password)
 
 	if err != nil {
 		return nil, err
@@ -82,8 +82,9 @@ func (s AccountService) CreateAccount(ctx context.Context, person domain.Person,
 	newAcc := domain.Account{
 		ID:         account.ID,
 		Identifier: account.Identifier,
-		TypeID:       account.Identifier,
-		Password:   hash,
+		TypeID:     account.TypeID,
+		Password:   string(hash),
+		PersonID:   account.PersonID,
 	}
 
 	if err != nil {

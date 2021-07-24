@@ -2,16 +2,18 @@ package bootstrap
 
 import (
 	"context"
-	"database/sql"
+
 	"fmt"
 	"github.com/go-playground/validator/v10"
 	"github.com/go-redis/redis/v8"
 	"github.com/huandu/go-sqlbuilder"
+	"gorm.io/driver/postgres"
 	"github.com/kelseyhightower/envconfig"
 	_ "github.com/lib/pq"
+	"gorm.io/gorm"
 	"rumm-api/internal/core/service"
 	"rumm-api/internal/platform/server"
-	"rumm-api/internal/platform/storage/postgres"
+	postgresdb "rumm-api/internal/platform/storage/postgres"
 	"time"
 )
 
@@ -24,8 +26,9 @@ func Run() error {
 
 	sqlbuilder.DefaultFlavor = sqlbuilder.PostgreSQL
 
-	postgresURI := fmt.Sprintf("postgres://%v:%v@%v:%v/%v?sslmode=disable", cfg.DbUser, cfg.DbPass, cfg.DbHost, cfg.DbPort, cfg.DbName)
-	db, err := sql.Open("postgres", postgresURI)
+	postgresURI := fmt.Sprintf("host=%v user=%v password=%v dbname=%v port=%v sslmode=disable TimeZone=-5", cfg.DbHost, cfg.DbUser, cfg.DbPass, cfg.DbName, cfg.DbPort)
+	//postgresURI := fmt.Sprintf("postgres://%v:%v@%v:%v/%v?sslmode=disable", cfg.DbUser, cfg.DbPass, cfg.DbHost, cfg.DbPort, cfg.DbName)
+	db, err := gorm.Open(postgres.Open(postgresURI), &gorm.Config{})
 	if err != nil {
 		return err
 	}
@@ -37,8 +40,8 @@ func Run() error {
 		DB:       cfg.RdbIndex,
 	})
 
-	clientRepository := postgres.NewClientRepository(db, cfg.DbTimeout, rdb)
-	accountRepository := postgres.NewAccountRepository(db, cfg.DbTimeout, cfg.JwtSecret, rdb)
+	clientRepository := postgresdb.NewClientRepository(db, cfg.DbTimeout, rdb)
+	accountRepository := postgresdb.NewAccountRepository(db, cfg.DbTimeout, cfg.JwtSecret, rdb)
 
 	accountService := service.NewAccountService(accountRepository, clientRepository)
 

@@ -2,18 +2,19 @@ package postgres
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/go-redis/redis/v8"
 	"github.com/huandu/go-sqlbuilder"
+	"gorm.io/gorm"
+	"rumm-api/internal/core/constants"
 	"rumm-api/internal/core/domain"
 	"rumm-api/kit/security"
 	"time"
 )
 
 type AccountRepository struct {
-	db        *sql.DB
+	db        *gorm.DB
 	dbTimeout time.Duration
 	jwtSecret string
 	rdb       *redis.Client
@@ -27,7 +28,7 @@ var accountTable = sqlbuilder.NewStruct(new(domain.Account)).For(sqlbuilder.Post
 var peopleTable = sqlbuilder.NewStruct(new(domain.Person)).For(sqlbuilder.PostgreSQL)
 var profileTable = sqlbuilder.NewStruct(new(domain.Profile)).For(sqlbuilder.PostgreSQL)
 
-func NewAccountRepository(db *sql.DB, dbTimeout time.Duration, jwtSecret string, rdb *redis.Client) *AccountRepository {
+func NewAccountRepository(db *gorm.DB, dbTimeout time.Duration, jwtSecret string, rdb *redis.Client) *AccountRepository {
 	return &AccountRepository{
 		db:        db,
 		dbTimeout: dbTimeout,
@@ -36,27 +37,30 @@ func NewAccountRepository(db *sql.DB, dbTimeout time.Duration, jwtSecret string,
 	}
 }
 
-func (r *AccountRepository) Create(ctx context.Context, account domain.Account, profile domain.Profile, person domain.Person) (*security.TokenDetails, error) {
-	ctxTimeout, cancel := context.WithTimeout(ctx, r.dbTimeout)
-	defer cancel()
+func (r *AccountRepository) Create(_ context.Context, account domain.Account, profile domain.Profile, person domain.Person) (*security.TokenDetails, error) {
 
-	query, args := peopleTable.InsertInto("people", person).Build()
-	if _, err := r.db.ExecContext(ctxTimeout, query, args...); err != nil {
-		return nil, fmt.Errorf("error trying to persist person on database: %v", err)
+	if account.TypeID == constants.ClientAccount {
+		if err := r.db.Omit("company_id").Create(person).Error; err != nil {
+			return nil, fmt.Errorf("error trying to persist account on database: %v", err)
+		}
+	} else {
+		if err := r.db.Create(&person).Error; err != nil {
+
+			return nil, fmt.Errorf("error trying to persist account on database: %v", err)
+		}
 	}
 
-	queryA, argsA := accountTable.InsertInto("accounts", account).Build()
-	if _, err := r.db.ExecContext(ctxTimeout, queryA, argsA...); err != nil {
+	if err := r.db.Omit("last_login").Create(&account).Error; err != nil {
 		return nil, fmt.Errorf("error trying to persist account on database: %v", err)
 	}
 
-	queryP, argsP := profileTable.InsertInto("profiles", profile).Build()
-	if _, err := r.db.ExecContext(ctxTimeout, queryP, argsP...); err != nil {
-		return nil, fmt.Errorf("error trying to persist profile on database: %v", err)
+	if err := r.db.Create(&profile).Error; err != nil {
+		return nil, fmt.Errorf("error trying to persist account on database: %v", err)
 	}
 
 	td, err := security.CreateToken(r.jwtSecret, account.ID)
 	if err != nil {
+
 		return nil, err
 	}
 
@@ -65,16 +69,11 @@ func (r *AccountRepository) Create(ctx context.Context, account domain.Account, 
 
 func (r *AccountRepository) Authenticate(ctx context.Context, accIdentifier, password string) (domain.Account, *security.TokenDetails, error) {
 
-	sb := accountInfoSQLStruck.SelectFrom(sqlAccountTable)
-	query, args := sb.Where(sb.Equal("identifier", accIdentifier)).Build()
-
 	ctxTimeout, cancel := context.WithTimeout(ctx, r.dbTimeout)
 	defer cancel()
 
-	row := r.db.QueryRowContext(ctxTimeout, query, args...)
-
 	var acc accountInfo
-	if err := row.Scan(accountInfoSQLStruck.Addr(&acc)...); err != nil {
+	if err := r.db.Where("identifier = ?", accIdentifier).First(&acc).Error; err != nil {
 		return domain.Account{}, nil, fmt.Errorf("error trying to find account on database, account doesn't exist: %v", err)
 	}
 
@@ -87,7 +86,7 @@ func (r *AccountRepository) Authenticate(ctx context.Context, accIdentifier, pas
 	account := domain.Account{
 		ID:         acc.ID,
 		Identifier: acc.Identifier,
-		Password:   hash,
+		Password:   string(hash),
 		TypeID:     acc.AccountID,
 	}
 
