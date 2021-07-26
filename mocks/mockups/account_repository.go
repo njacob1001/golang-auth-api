@@ -17,33 +17,26 @@ type AccountRepository struct {
 }
 
 // Authenticate provides a mock function with given fields: ctx, accIdentifier, password
-func (_m *AccountRepository) Authenticate(ctx context.Context, accIdentifier string, password string) (domain.Account, *security.TokenDetails, error) {
+func (_m *AccountRepository) Authenticate(ctx context.Context, accIdentifier string, password string) (*security.TokenDetails, error) {
 	ret := _m.Called(ctx, accIdentifier, password)
 
-	var r0 domain.Account
-	if rf, ok := ret.Get(0).(func(context.Context, string, string) domain.Account); ok {
+	var r0 *security.TokenDetails
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) *security.TokenDetails); ok {
 		r0 = rf(ctx, accIdentifier, password)
 	} else {
-		r0 = ret.Get(0).(domain.Account)
-	}
-
-	var r1 *security.TokenDetails
-	if rf, ok := ret.Get(1).(func(context.Context, string, string) *security.TokenDetails); ok {
-		r1 = rf(ctx, accIdentifier, password)
-	} else {
-		if ret.Get(1) != nil {
-			r1 = ret.Get(1).(*security.TokenDetails)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*security.TokenDetails)
 		}
 	}
 
-	var r2 error
-	if rf, ok := ret.Get(2).(func(context.Context, string, string) error); ok {
-		r2 = rf(ctx, accIdentifier, password)
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = rf(ctx, accIdentifier, password)
 	} else {
-		r2 = ret.Error(2)
+		r1 = ret.Error(1)
 	}
 
-	return r0, r1, r2
+	return r0, r1
 }
 
 // Create provides a mock function with given fields: ctx, account, profile, person

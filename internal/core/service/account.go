@@ -94,7 +94,7 @@ func (s AccountService) CreateAccount(ctx context.Context, person domain.Person,
 	return s.accountRepository.Create(ctx, newAcc, profile, person)
 }
 
-func (s AccountService) Authenticate(ctx context.Context, accIdentifier, password string) (domain.Account, *security.TokenDetails, error) {
+func (s AccountService) Authenticate(ctx context.Context, accIdentifier, password string) (*security.TokenDetails, error) {
 	return s.accountRepository.Authenticate(ctx, accIdentifier, password)
 }
 

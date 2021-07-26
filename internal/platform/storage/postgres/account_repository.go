@@ -67,48 +67,35 @@ func (r *AccountRepository) Create(_ context.Context, account domain.Account, pr
 	return td, nil
 }
 
-func (r *AccountRepository) Authenticate(ctx context.Context, accIdentifier, password string) (domain.Account, *security.TokenDetails, error) {
+func (r *AccountRepository) Authenticate(ctx context.Context, accIdentifier, password string) (*security.TokenDetails, error) {
 
 	ctxTimeout, cancel := context.WithTimeout(ctx, r.dbTimeout)
 	defer cancel()
 
-	var acc accountInfo
+	var acc domain.Account
 	if err := r.db.Where("identifier = ?", accIdentifier).First(&acc).Error; err != nil {
-		return domain.Account{}, nil, fmt.Errorf("error trying to find account on database, account doesn't exist: %v", err)
+		return nil, fmt.Errorf("error trying to find account on database, account doesn't exist: %v", err)
 	}
 
-	hash, err := security.GetHash(password)
+	isValid, err := acc.ValidatePassword(password)
 
 	if err != nil {
-		return domain.Account{}, nil, err
-	}
-
-	account := domain.Account{
-		ID:         acc.ID,
-		Identifier: acc.Identifier,
-		Password:   string(hash),
-		TypeID:     acc.AccountID,
-	}
-
-	isValid, err := account.ValidatePassword(password)
-
-	if err != nil {
-		return domain.Account{}, nil, err
+		return nil, err
 	}
 	if isValid {
-		td, err := security.CreateToken(r.jwtSecret, account.ID)
+		td, err := security.CreateToken(r.jwtSecret, acc.ID)
 		if err != nil {
-			return domain.Account{}, nil, err
+			return nil, err
 		}
 
-		if err := security.CreateAuth(ctxTimeout, account.ID, td, r.rdb); err != nil {
-			return domain.Account{}, nil, err
+		if err := security.CreateAuth(ctxTimeout, acc.ID, td, r.rdb); err != nil {
+			return nil, err
 		}
 
-		return account, td, nil
+		return td, nil
 	}
 
-	return domain.Account{}, nil, domain.ErrAccountValidation
+	return nil, domain.ErrAccountValidation
 }
 
 func (r *AccountRepository) Logout(ctx context.Context, accessUUID string) error {
