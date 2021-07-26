@@ -2,11 +2,11 @@ package postgres
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"github.com/go-redis/redis/v8"
 	"github.com/huandu/go-sqlbuilder"
+	"gorm.io/gorm"
 	"rumm-api/internal/core/domain"
 	"time"
 )
@@ -16,12 +16,12 @@ var clientInfoSQLStruck = sqlbuilder.NewStruct(new(clientInfo)).For(sqlbuilder.P
 var updateClientSQLStruck = sqlbuilder.NewStruct(new(sqlUpdateClient)).For(sqlbuilder.PostgreSQL)
 
 type ClientRepository struct {
-	db        *sql.DB
+	db        *gorm.DB
 	dbTimeout time.Duration
 	rdb       *redis.Client
 }
 
-func NewClientRepository(db *sql.DB, dbTimeout time.Duration, rdb *redis.Client) *ClientRepository {
+func NewClientRepository(db *gorm.DB, dbTimeout time.Duration, rdb *redis.Client) *ClientRepository {
 	return &ClientRepository{
 		db:        db,
 		dbTimeout: dbTimeout,
@@ -29,94 +29,26 @@ func NewClientRepository(db *sql.DB, dbTimeout time.Duration, rdb *redis.Client)
 	}
 }
 
-func (r *ClientRepository) Create(ctx context.Context, client domain.Client) error {
-	query, args := clientSQLStruck.InsertInto(sqlClientTable, sqlClient{
-		ID:        client.ID,
-		Name:      client.Name,
-		LastName:  client.LastName,
-		Birthday:  client.Birthday,
-		Email:     client.Email,
-		City:      client.City,
-		Address:   client.Address,
-		Cellphone: client.Cellphone,
-	}).Build()
+func (r *ClientRepository) Create(_ context.Context, _ domain.Client) error {
 
-	ctxTimeout, cancel := context.WithTimeout(ctx, r.dbTimeout)
-	defer cancel()
 
-	_, err := r.db.ExecContext(ctxTimeout, query, args...)
+	return nil
 
-	if err != nil {
-		return fmt.Errorf("error trying to persist client on database: %v", err)
-	}
+
+}
+
+func (r *ClientRepository) Find(_ context.Context, _ string) (domain.Client, error) {
+	return domain.Client{}, nil
+}
+
+func (r *ClientRepository) Delete(_ context.Context, _ string) error {
 
 	return nil
 }
 
-func (r *ClientRepository) Find(ctx context.Context, clientID string) (domain.Client, error) {
+func (r *ClientRepository) Update(_ context.Context, _ string, _ domain.Client) error {
 
-	sb := clientInfoSQLStruck.SelectFrom(sqlClientTable)
-	query, args := sb.Where(sb.Equal("id", clientID)).Build()
 
-	ctxTimeout, cancel := context.WithTimeout(ctx, r.dbTimeout)
-	defer cancel()
-
-	row := r.db.QueryRowContext(ctxTimeout, query, args...)
-
-	var dbClient clientInfo
-
-	if err := row.Scan(clientInfoSQLStruck.Addr(&dbClient)...); err != nil {
-		return domain.Client{}, fmt.Errorf("error trying to find client on database, client doesn't exist: %v", err)
-	}
-
-	client := domain.Client{
-		ID:        dbClient.ID,
-		Name:      dbClient.Name,
-		LastName:  dbClient.LastName,
-		Birthday:  dbClient.Birthday.Format("2006-01-02"),
-		City:      dbClient.City,
-		Address:   dbClient.Address,
-		Email:     dbClient.Email,
-		Cellphone: dbClient.Cellphone,
-	}
-
-	return client, nil
-}
-
-func (r *ClientRepository) Delete(ctx context.Context, clientID string) error {
-	sb := clientInfoSQLStruck.DeleteFrom(sqlClientTable)
-	query, args := sb.Where(sb.Equal("id", clientID)).Build()
-	ctxTimeout, cancel := context.WithTimeout(ctx, r.dbTimeout)
-	defer cancel()
-	_, err := r.db.ExecContext(ctxTimeout, query, args...)
-	if err != nil {
-		return fmt.Errorf("error trying to delete client: %v", err)
-	}
-
-	return nil
-}
-
-func (r *ClientRepository) Update(ctx context.Context, clientID string, client domain.Client) error {
-
-	newClient := sqlUpdateClient{
-		Name:      client.Name,
-		LastName:  client.LastName,
-		Birthday:  client.Birthday,
-		Cellphone: client.Cellphone,
-		Address:   client.Address,
-		Email:     client.Email,
-		City:      client.City,
-	}
-	sb := updateClientSQLStruck.Update(sqlClientTable, newClient)
-	query, args := sb.Where(sb.Equal("id", clientID)).Build()
-
-	ctxTimeout, cancel := context.WithTimeout(ctx, r.dbTimeout)
-	defer cancel()
-
-	_, err := r.db.ExecContext(ctxTimeout, query, args...)
-	if err != nil {
-		return fmt.Errorf("error trying to update client: %v", err)
-	}
 	return nil
 }
 
