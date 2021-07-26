@@ -40,17 +40,7 @@ func ValidatePassword(hash []byte, password string) (bool, error) {
 	bch := hash
 	bcp := []byte(password)
 
-	fmt.Println("hashed pass")
-	fmt.Println(string(hash))
-	fmt.Println("user entered password")
-	fmt.Println(password)
-	res, _ := GetHash(password)
-	fmt.Println(string(res))
-
 	err := bcrypt.CompareHashAndPassword(bch, bcp)
-
-	fmt.Println("error:")
-	fmt.Println(err)
 
 	if err == nil {
 		return true, nil
