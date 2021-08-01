@@ -2,6 +2,7 @@ package registration
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"rumm-api/internal/core/service"
 	"rumm-api/kit/security"
@@ -16,7 +17,8 @@ func RefreshToken(accountService service.AccountService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		refreshToken := security.ExtractToken(r)
 		ctx := r.Context()
-
+		fmt.Println("token")
+		fmt.Println(refreshToken)
 		td, err := accountService.Refresh(ctx, refreshToken)
 
 		if err != nil {

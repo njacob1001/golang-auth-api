@@ -6,10 +6,9 @@ import (
 	"fmt"
 	"github.com/go-playground/validator/v10"
 	"github.com/go-redis/redis/v8"
-	"github.com/huandu/go-sqlbuilder"
-	"gorm.io/driver/postgres"
 	"github.com/kelseyhightower/envconfig"
 	_ "github.com/lib/pq"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"rumm-api/internal/core/service"
 	"rumm-api/internal/platform/server"
@@ -23,8 +22,6 @@ func Run() error {
 	if err != nil {
 		return nil
 	}
-
-	sqlbuilder.DefaultFlavor = sqlbuilder.PostgreSQL
 
 	postgresURI := fmt.Sprintf("host=%v user=%v password=%v dbname=%v port=%v sslmode=disable TimeZone=-5", cfg.DbHost, cfg.DbUser, cfg.DbPass, cfg.DbName, cfg.DbPort)
 	//postgresURI := fmt.Sprintf("postgres://%v:%v@%v:%v/%v?sslmode=disable", cfg.DbUser, cfg.DbPass, cfg.DbHost, cfg.DbPort, cfg.DbName)
@@ -40,10 +37,10 @@ func Run() error {
 		DB:       cfg.RdbIndex,
 	})
 
-	clientRepository := postgresdb.NewClientRepository(db, cfg.DbTimeout, rdb)
+
 	accountRepository := postgresdb.NewAccountRepository(db, cfg.DbTimeout, cfg.JwtSecret, rdb)
 
-	accountService := service.NewAccountService(accountRepository, clientRepository)
+	accountService := service.NewAccountService(accountRepository)
 
 	isDevelopMode := !(cfg.ServerMode == "release")
 
@@ -53,7 +50,7 @@ func Run() error {
 		context.Background(),
 		server.WithTimeout(cfg.ShutdownTimeout),
 		server.WithAddress(cfg.Host, cfg.Port),
-		server.WithClientService(accountService),
+		server.WithAccountService(accountService),
 		server.WithDevelopEnv(isDevelopMode),
 		server.WithJwtSecret(cfg.JwtSecret),
 		server.WithRedis(rdb),

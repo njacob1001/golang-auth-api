@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/go-redis/redis/v8"
-	"github.com/huandu/go-sqlbuilder"
 	"gorm.io/gorm"
 	"rumm-api/internal/core/constants"
 	"rumm-api/internal/core/domain"
@@ -19,14 +18,6 @@ type AccountRepository struct {
 	jwtSecret string
 	rdb       *redis.Client
 }
-
-var accountSQLStruck = sqlbuilder.NewStruct(new(sqlAccount)).For(sqlbuilder.PostgreSQL)
-var accountInfoSQLStruck = sqlbuilder.NewStruct(new(accountInfo)).For(sqlbuilder.PostgreSQL)
-
-// TODO: remote For method and use a const instead of a var
-var accountTable = sqlbuilder.NewStruct(new(domain.Account)).For(sqlbuilder.PostgreSQL)
-var peopleTable = sqlbuilder.NewStruct(new(domain.Person)).For(sqlbuilder.PostgreSQL)
-var profileTable = sqlbuilder.NewStruct(new(domain.Profile)).For(sqlbuilder.PostgreSQL)
 
 func NewAccountRepository(db *gorm.DB, dbTimeout time.Duration, jwtSecret string, rdb *redis.Client) *AccountRepository {
 	return &AccountRepository{

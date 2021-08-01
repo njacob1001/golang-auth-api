@@ -6,16 +6,6 @@ import (
 	"rumm-api/kit/security"
 )
 
-type ClientRepository interface {
-	Create(ctx context.Context, client domain.Client) error
-	Find(ctx context.Context, clientID string) (domain.Client, error)
-	Delete(ctx context.Context, clientID string) error
-	Update(ctx context.Context, clientID string, client domain.Client) error
-	CreateTemporal(ctx context.Context, client domain.Client) error
-}
-
-//go:generate mockery --case=snake --outpkg=storagemocks --output=../../../mocks/mockups --name=ClientRepository
-
 type AccountRepository interface {
 	Create(ctx context.Context, account domain.Account, profile domain.Profile, person domain.Person) (*security.TokenDetails, error)
 	Authenticate(ctx context.Context, accIdentifier, password string) (*security.TokenDetails, error)
