@@ -60,8 +60,6 @@ func (r *AccountRepository) Create(_ context.Context, account domain.Account, pr
 
 func (r *AccountRepository) Authenticate(ctx context.Context, accIdentifier, password string) (*security.TokenDetails, error) {
 
-	ctxTimeout, cancel := context.WithTimeout(ctx, r.dbTimeout)
-	defer cancel()
 
 	var acc domain.Account
 	if err := r.db.Where("identifier = ?", accIdentifier).First(&acc).Error; err != nil {
@@ -79,7 +77,7 @@ func (r *AccountRepository) Authenticate(ctx context.Context, accIdentifier, pas
 			return nil, err
 		}
 
-		if err := security.CreateAuth(ctxTimeout, acc.ID, td, r.rdb); err != nil {
+		if err := security.CreateAuth(ctx, acc.ID, td, r.rdb); err != nil {
 			return nil, err
 		}
 

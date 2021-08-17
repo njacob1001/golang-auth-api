@@ -2,7 +2,6 @@ package bootstrap
 
 import (
 	"context"
-
 	"fmt"
 	"github.com/go-playground/validator/v10"
 	"github.com/go-redis/redis/v8"
@@ -17,18 +16,27 @@ import (
 )
 
 func Run() error {
-	var cfg config
+	var cfg configEnv
 	err := envconfig.Process("RUMM", &cfg)
 	if err != nil {
-		return nil
+		return err
 	}
 
 	postgresURI := fmt.Sprintf("host=%v user=%v password=%v dbname=%v port=%v sslmode=disable TimeZone=-5", cfg.DbHost, cfg.DbUser, cfg.DbPass, cfg.DbName, cfg.DbPort)
-	//postgresURI := fmt.Sprintf("postgres://%v:%v@%v:%v/%v?sslmode=disable", cfg.DbUser, cfg.DbPass, cfg.DbHost, cfg.DbPort, cfg.DbName)
+
+	//postgresURI := fmt.Sprintf("postgres://%v:%v@%v:%v/%v?sslmode=disable", cfg.DbUser, authenticationToken, cfg.DbHost, cfg.DbPort, cfg.DbName)
+	//sqlDB, err := sql.Open("postgres", postgresURI)
+
 	db, err := gorm.Open(postgres.Open(postgresURI), &gorm.Config{})
 	if err != nil {
 		return err
 	}
+
+
+	//if err := sqlDB.Ping(); err != nil {
+	//	panic("Ping error: "+err.Error())
+	//}
+
 
 	redisURI := fmt.Sprintf("%v:%v", cfg.RdbHost, cfg.RdbPort)
 	rdb := redis.NewClient(&redis.Options{
@@ -62,7 +70,7 @@ func Run() error {
 	return srv.Run(ctx)
 }
 
-type config struct {
+type configEnv struct {
 	// Server configuration
 	Host            string        `default:"0.0.0.0"`
 	Port            uint          `default:"8080"`
