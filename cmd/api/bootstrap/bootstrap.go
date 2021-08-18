@@ -72,25 +72,25 @@ func Run() error {
 
 type configEnv struct {
 	// Server configuration
-	Host            string        `default:"0.0.0.0"`
-	Port            uint          `default:"8080"`
-	ShutdownTimeout time.Duration `default:"10s"`
+	Host            string        `default:"0.0.0.0" split_words:"true"`
+	Port            uint          `default:"8080" split_words:"true"`
+	ShutdownTimeout time.Duration `default:"10s" split_words:"true"`
 
 	// Database configuration
-	DbUser     string        `required:"true"`
-	DbPass     string        `required:"true"`
-	DbHost     string        `required:"true"`
-	DbPort     uint          `required:"true"`
-	DbName     string        `required:"true"`
-	DbTimeout  time.Duration `default:"5s"`
-	ServerMode string        `default:"develop"`
+	DbUser     string        `required:"true" split_words:"true"`
+	DbPass     string        `required:"true" split_words:"true"`
+	DbHost     string        `required:"true" split_words:"true"`
+	DbPort     uint          `required:"true" split_words:"true"`
+	DbName     string        `required:"true" split_words:"true"`
+	DbTimeout  time.Duration `default:"5s" split_words:"true"`
+	ServerMode string        `default:"develop" split_words:"true"`
 
 	// authentication
-	JwtSecret string `required:"true"`
+	JwtSecret string `required:"true" split_words:"true"`
 
 	// Redis database
-	RdbIndex    int    `default:"0"`
-	RdbPassword string `default:""`
-	RdbHost     string `default:"0.0.0.0"`
-	RdbPort     uint   `default:"6379"`
+	RdbIndex    int    `default:"0" split_words:"true"`
+	RdbPassword string `default:"" split_words:"true"`
+	RdbHost     string `default:"0.0.0.0" split_words:"true"`
+	RdbPort     uint   `default:"6379" split_words:"true"`
 }
