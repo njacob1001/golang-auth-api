@@ -3,7 +3,7 @@ services:
   portainer:
     image: portainer/portainer-ce:latest
     command: -H unix:///var/run/docker.sock
-    restart: always
+    restart: unless-stopped
     ports:
       - 9000:9000
       - 8000:8000
@@ -14,16 +14,17 @@ services:
     container_name: api
     image: rumm-api-auth:alplha
     build: .
-    env_file: .env
+    env_file: .env.container
     ports:
-      - '8080:8080'
+      - '80:80'
     depends_on:
       - database
     restart: unless-stopped
   database:
     container_name: database
+    restart: unless-stopped
     image: kartoza/postgis:13-3.1
-    env_file: .env
+    env_file: .env.container
     environment:
       POSTGRES_DBNAME: "${RUMM_DBNAME}"
       POSTGRES_USER: "${RUMM_DBUSER}"
@@ -38,6 +39,7 @@ services:
   redis:
     container_name: redis
     image: redis:alpine3.13
+    restart: unless-stopped
     volumes:
       - redisdata:/data
 volumes:

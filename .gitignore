@@ -206,7 +206,7 @@ $RECYCLE.BIN/
 
 *.sql
 *.rdb
-.env
+.env.container
 .env.development
 data/
 dbvolume/
