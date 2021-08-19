@@ -5,6 +5,9 @@ export
 run:
 	redis-server & cd cmd/api && go run main.go
 
+runproduction:
+	cd cmd/api && go run main.go
+
 test:
 	go test ./...
 

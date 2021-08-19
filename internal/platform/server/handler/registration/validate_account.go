@@ -29,7 +29,7 @@ func ValidateAccount(accountService service.AccountService) http.HandlerFunc {
 			return
 		}
 
-		_, td,err := accountService.Authenticate(ctx, req.Identifier, req.Password)
+		td,err := accountService.Authenticate(ctx, req.Identifier, req.Password)
 
 		if err != nil {
 			switch {

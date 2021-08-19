@@ -14,7 +14,6 @@ import (
 	"rumm-api/internal/core/service"
 	"rumm-api/internal/platform/server/apimiddleware"
 	"rumm-api/internal/platform/server/handler/registration"
-	"rumm-api/internal/platform/server/routeset"
 	"time"
 )
 
@@ -82,13 +81,10 @@ func (s *Server) registerRoutes() {
 	// protected endpoints
 	s.router.Group(func(r chi.Router) {
 		r.Use(apimiddleware.JwtAuth(s.jwtSecret, s.rdb))
-
-		r.Route("/clients", routeset.Client(s.accountService, s.validator))
+		r.Post("/logout", registration.Logout(s.accountService, s.jwtSecret))
 	})
 
 	s.router.Group(func(r chi.Router) {
-		s.router.Post("/client", registration.CreateTemporalClient(s.accountService, s.validator))
-		s.router.Post("/logout", registration.Logout(s.accountService, s.jwtSecret))
 		s.router.Post("/account", registration.CreateAccount(s.accountService, s.validator))
 		s.router.Post("/login", registration.ValidateAccount(s.accountService))
 		s.router.Post("/refresh", registration.RefreshToken(s.accountService))
@@ -107,7 +103,6 @@ func serverContext(ctx context.Context) context.Context {
 
 	return ctx
 }
-
 func WithJwtSecret(secret string) Option {
 	return func(server *Server) error {
 		server.jwtSecret = secret
@@ -126,9 +121,9 @@ func WithTimeout(timeout time.Duration) Option {
 		return nil
 	}
 }
-func WithClientService(clientService service.AccountService) Option {
+func WithAccountService(accountService service.AccountService) Option {
 	return func(server *Server) error {
-		server.accountService = clientService
+		server.accountService = accountService
 		return nil
 	}
 }

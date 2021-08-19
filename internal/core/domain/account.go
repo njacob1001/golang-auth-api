@@ -3,101 +3,49 @@ package domain
 import (
 	"errors"
 	"fmt"
-	"rumm-api/kit/identifier"
 	"rumm-api/kit/security"
+	"time"
 )
 
-type Account struct {
-	id           string
-	accountType  string
-	identifier   string
-	password     string
+type Profile struct {
+	ID        string `json:"id" validate:"required,uuid4"`
+	Code      string `json:"code" validate:"required"`
+	IsActive  bool   `json:"is_active" validate:"required"`
+	DarkMode  bool   `json:"dark_mode" validate:"required"`
+	AccountID string `json:"account_id" validate:"required,uuid4"`
 }
 
-var ErrInvalidClientUUID = errors.New("invalid password")
+type Person struct {
+	ID        string    `json:"id" validate:"required,uuid4"`
+	Name      string    `json:"name" validate:"required"`
+	IDType    string    `json:"id_type" validate:"required"`
+	IDNumber  string    `json:"id_number" validate:"required"`
+	LastName  string    `json:"last_name" validate:"required"`
+	Cellphone string    `json:"cellphone" validate:"required"`
+	BirthDate time.Time `json:"birth_date" validate:"required"`
+	Email     string    `json:"email" validate:"required"`
+	Country   string    `json:"country"`
+	City      string    `json:"city"`
+	Address   string    `json:"address"`
+	Photo     string    `json:"photo"`
+	CompanyID string    `json:"company_id"`
+}
+
+type Account struct {
+	ID            string    `json:"id" db:"id" validate:"required,uuid4"`
+	Identifier    string    `json:"identifier" validate:"required"`
+	Password      string    `json:"password" validate:"required"`
+	RequestLogin  bool      `json:"request_login"`
+	ResetPassword bool      `json:"request_reset_password"`
+	PersonID      string    `json:"person_id" validate:"required,uuid4"`
+	TypeID        string    `json:"type_id" validate:"required,uuid4"`
+	LastLogin     time.Time `json:"last_login"`
+}
+
 var ErrAccountValidation = errors.New("account validation error")
 
-type AccountOption func(*Account) error
-
-func NewAccount(options ...AccountOption) (Account, error) {
-	account := Account{}
-	for _, option := range options {
-		err := option(&account)
-		if err != nil {
-			return Account{}, err
-		}
-	}
-
-	return account, nil
-
-}
-
-func WithAccountID(id string) AccountOption {
-	return func(a *Account) error {
-		safeUUID, err := identifier.ValidateIdentifier(id)
-		if err != nil {
-			return err
-		}
-		a.id = safeUUID.String
-		return nil
-	}
-}
-
-func WithAccountPass(password string) AccountOption {
-	return func(a *Account) error {
-		hashPassword, err := security.GetHash(password)
-		if err != nil {
-			return fmt.Errorf("%w", ErrInvalidClientUUID)
-		}
-		a.password = hashPassword
-		return nil
-	}
-}
-
-func WithAccountHashedPass(password string) AccountOption {
-	return func(a *Account) error {
-		if password == "" {
-			return ErrInvalidClientUUID
-		}
-		a.password = password
-		return nil
-	}
-}
-
-func WithAccountIdentifier(accIdentifier string) AccountOption {
-	return func(a *Account) error {
-		a.identifier = accIdentifier
-		return nil
-	}
-}
-
-
-func WithAccountType(accountType string) AccountOption {
-	return func(a *Account) error {
-		a.accountType = accountType
-		return nil
-	}
-}
-
-
-func (a Account) ID() string {
-	return a.id
-}
-
-func (a Account) Password() string {
-	return a.password
-}
-
-func (a Account) Identifier() string {
-	return a.identifier
-}
-
-func (a Account) AccountType() string{
-	return a.accountType
-}
-
 func (a Account) ValidatePassword(password string) (bool, error) {
-	isValid, err := security.ValidatePassword(a.password, password)
+	isValid, err := security.ValidatePassword([]byte(a.Password), password)
 
 	if err != nil {
 		return false, fmt.Errorf("%w", ErrAccountValidation)
