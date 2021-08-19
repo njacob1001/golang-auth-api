@@ -17,40 +17,29 @@ import (
 
 func Run() error {
 	var cfg configEnv
-	err := envconfig.Process("RUMM", &cfg)
+	err := envconfig.Process("AUTH_API", &cfg)
 	if err != nil {
 		return err
 	}
 
 	postgresURI := fmt.Sprintf("host=%v user=%v password=%v dbname=%v port=%v sslmode=disable TimeZone=-5", cfg.DbHost, cfg.DbUser, cfg.DbPass, cfg.DbName, cfg.DbPort)
 
-	//postgresURI := fmt.Sprintf("postgres://%v:%v@%v:%v/%v?sslmode=disable", cfg.DbUser, authenticationToken, cfg.DbHost, cfg.DbPort, cfg.DbName)
-	//sqlDB, err := sql.Open("postgres", postgresURI)
-
 	db, err := gorm.Open(postgres.Open(postgresURI), &gorm.Config{})
 	if err != nil {
 		return err
 	}
 
-
-	//if err := sqlDB.Ping(); err != nil {
-	//	panic("Ping error: "+err.Error())
-	//}
-
-
-	redisURI := fmt.Sprintf("%v:%v", cfg.RdbHost, cfg.RdbPort)
+	redisURI := fmt.Sprintf("%v:%v", cfg.CacheHost, cfg.CachePort)
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     redisURI,
-		Password: cfg.RdbPassword,
-		DB:       cfg.RdbIndex,
+		Addr: redisURI,
+		DB:   cfg.CacheIndex,
 	})
-
 
 	accountRepository := postgresdb.NewAccountRepository(db, cfg.DbTimeout, cfg.JwtSecret, rdb)
 
 	accountService := service.NewAccountService(accountRepository)
 
-	isDevelopMode := !(cfg.ServerMode == "release")
+	isDevelopMode := !(cfg.Mode == "release")
 
 	validate := validator.New()
 
@@ -71,26 +60,19 @@ func Run() error {
 }
 
 type configEnv struct {
-	// Server configuration
 	Host            string        `default:"0.0.0.0" split_words:"true"`
-	Port            uint          `default:"8080" split_words:"true"`
+	Port            uint          `default:"80" split_words:"true"`
 	ShutdownTimeout time.Duration `default:"10s" split_words:"true"`
-
-	// Database configuration
-	DbUser     string        `required:"true" split_words:"true"`
-	DbPass     string        `required:"true" split_words:"true"`
-	DbHost     string        `required:"true" split_words:"true"`
-	DbPort     uint          `required:"true" split_words:"true"`
-	DbName     string        `required:"true" split_words:"true"`
-	DbTimeout  time.Duration `default:"5s" split_words:"true"`
-	ServerMode string        `default:"develop" split_words:"true"`
-
-	// authentication
-	JwtSecret string `required:"true" split_words:"true"`
-
-	// Redis database
-	RdbIndex    int    `default:"0" split_words:"true"`
-	RdbPassword string `default:"" split_words:"true"`
-	RdbHost     string `default:"0.0.0.0" split_words:"true"`
-	RdbPort     uint   `default:"6379" split_words:"true"`
+	Mode            string        `default:"DEVELOP" split_words:"true"`
+	DbUser          string        `default:"admin" split_words:"true"`
+	DbPass          string        `default:"admin123" split_words:"true"`
+	DbHost          string        `default:"0.0.0.0" split_words:"true"`
+	DbPort          uint          `default:"5432" split_words:"true"`
+	DbName          string        `default:"develop" split_words:"true"`
+	DbSchema        string        `default:"public" split_words:"true"`
+	DbTimeout       time.Duration `default:"5s" split_words:"true"`
+	JwtSecret       string        `default:"example_secret" split_words:"true"`
+	CacheIndex      int           `default:"1" split_words:"true"`
+	CacheHost       string        `default:"0.0.0.0" split_words:"true"`
+	CachePort       uint          `default:"6379" split_words:"true"`
 }
