@@ -210,4 +210,5 @@ $RECYCLE.BIN/
 .env.development
 data/
 dbvolume/
+bin/
 # End of https://www.toptal.com/developers/gitignore/api/go,jetbrains,vscode,macos,windows,linux
