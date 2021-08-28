@@ -2,25 +2,16 @@ package registration
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
-	"rumm-api/internal/core/domain"
 	"rumm-api/internal/core/service"
-	"rumm-api/kit/identifier"
 )
 
-type createAccountRequest struct {
-	Person  domain.Person  `json:"person"`
-	Account domain.Account `json:"account"`
-	Profile domain.Profile `json:"profile"`
+type ValidateAccountResponse struct {
+	SnsToken string `json:"sns_token"`
+	FinishID string `json:"finish_id"`
 }
 
-type createResponse struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
-}
-
-func CreateAccount(s service.AccountService) http.HandlerFunc {
+func ValidateAccountRegister(s service.AccountService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		var req createAccountRequest
@@ -42,25 +33,15 @@ func CreateAccount(s service.AccountService) http.HandlerFunc {
 			return
 		}
 
-		td, err := s.CreateAccount(ctx, req.Person, req.Account, req.Profile)
-
+		snsToken, err := s.VerifyAccountRegister(ctx, req.Person, req.Account, req.Profile)
 		if err != nil {
-			switch {
-			case errors.Is(err, identifier.ErrInvalidClientUUID):
-				http.Error(w, err.Error(), http.StatusBadRequest)
-
-				return
-			default:
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
 		}
 
-		response := createResponse{
-			AccessToken:  td.AccessToken,
-			RefreshToken: td.RefreshToken,
+		response := ValidateAccountResponse{
+			SnsToken: snsToken,
 		}
-
 		j, err := json.Marshal(response)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -74,6 +55,5 @@ func CreateAccount(s service.AccountService) http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(http.StatusCreated)
 		return
-
 	}
 }

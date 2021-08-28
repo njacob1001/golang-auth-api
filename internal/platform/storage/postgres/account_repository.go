@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/go-redis/redis/v8"
@@ -59,7 +60,6 @@ func (r *AccountRepository) Create(_ context.Context, account domain.Account, pr
 }
 
 func (r *AccountRepository) Authenticate(ctx context.Context, accIdentifier, password string) (*security.TokenDetails, error) {
-
 
 	var acc domain.Account
 	if err := r.db.Where("identifier = ?", accIdentifier).First(&acc).Error; err != nil {
@@ -153,4 +153,30 @@ func (r *AccountRepository) Refresh(ctx context.Context, refreshToken string) (*
 	}
 	return nil, security.ErrTokenCreator
 
+}
+
+var ErrAccountRegistered = errors.New("account already registered")
+var ErrPersonRegistered = errors.New("person already registered")
+var ErrProfileRegistered = errors.New("profile already registered")
+
+func (r *AccountRepository) ValidateRegister(ctx context.Context, account domain.Account, profile domain.Profile, person domain.Person) error {
+	ctxTimeout, cancel := context.WithTimeout(ctx, r.dbTimeout)
+	defer cancel()
+
+	ar := r.db.WithContext(ctxTimeout).Where("identifier = ?", account.Identifier).Find(&account)
+	if ar.RowsAffected > 0 {
+		return ErrAccountRegistered
+	}
+
+	pr := r.db.WithContext(ctxTimeout).Where("email = ?", person.Email).Or("cellphone = ?", person.Photo).Or("id_number = ?", person.IDNumber).Find(&person)
+	if pr.RowsAffected > 0 {
+		return ErrPersonRegistered
+	}
+
+	pfr := r.db.WithContext(ctxTimeout).Find(&profile)
+	if pfr.RowsAffected > 0 {
+		return ErrProfileRegistered
+	}
+	fmt.Println("no hay errores aqui")
+	return nil
 }

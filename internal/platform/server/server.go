@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-playground/validator/v10"
+	"github.com/go-chi/cors"
 	"github.com/go-redis/redis/v8"
 	"log"
 	"net/http"
@@ -26,7 +26,6 @@ type Server struct {
 	developMode     bool
 	jwtSecret       string
 	rdb             *redis.Client
-	validator       *validator.Validate
 	//deps
 	accountService service.AccountService
 }
@@ -78,6 +77,17 @@ func (s *Server) Run(ctx context.Context) error {
 
 func (s *Server) registerRoutes() {
 
+	s.router.Use(cors.Handler(cors.Options{
+		// AllowedOrigins:   []string{"https://foo.com"}, // Use this to allow specific origin hosts
+		AllowedOrigins:   []string{"https://*", "http://*"},
+		AllowOriginFunc:  func(r *http.Request, origin string) bool { return true },
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token", "Origin"},
+		ExposedHeaders:   []string{"Link"},
+		AllowCredentials: false,
+		MaxAge:           300, // Maximum value not ignored by any of major browsers
+	}))
+
 	// protected endpoints
 	s.router.Group(func(r chi.Router) {
 		r.Use(apimiddleware.JwtAuth(s.jwtSecret, s.rdb))
@@ -85,12 +95,18 @@ func (s *Server) registerRoutes() {
 	})
 
 	s.router.Group(func(r chi.Router) {
-		s.router.Post("/account", registration.CreateAccount(s.accountService, s.validator))
+		r.Use(apimiddleware.SnsValidation(s.accountService))
+		r.Post("/account-send-code", registration.ResendCode(s.accountService))
+		r.Post("/account-verify-code", registration.Verify(s.accountService))
+		r.Post("/account-register", registration.CreateAccount(s.accountService))
+	})
+
+	s.router.Group(func(r chi.Router) {
+		s.router.Post("/account-init-register", registration.ValidateAccountRegister(s.accountService))
 		s.router.Post("/login", registration.ValidateAccount(s.accountService))
 		s.router.Post("/refresh", registration.RefreshToken(s.accountService))
 	})
 }
-
 
 func serverContext(ctx context.Context) context.Context {
 	c := make(chan os.Signal, 1)
@@ -136,12 +152,6 @@ func WithDevelopEnv(isDevelopMode bool) Option {
 func WithRedis(rdb *redis.Client) Option {
 	return func(server *Server) error {
 		server.rdb = rdb
-		return nil
-	}
-}
-func WithValidator(v *validator.Validate) Option {
-	return func(server *Server) error {
-		server.validator = v
 		return nil
 	}
 }

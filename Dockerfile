@@ -18,7 +18,7 @@ RUN CGO_ENABLED=0 go build -o ./out/bin ./cmd/api/main.go
 #
 #COPY --from=build ./out/bin ./out/bin
 
-EXPOSE 8080
+EXPOSE 80
 
 ENTRYPOINT ["./out/bin"]
 

@@ -21,7 +21,7 @@ type Person struct {
 	IDType    string    `json:"id_type" validate:"required"`
 	IDNumber  string    `json:"id_number" validate:"required"`
 	LastName  string    `json:"last_name" validate:"required"`
-	Cellphone string    `json:"cellphone" validate:"required"`
+	Cellphone string    `json:"cellphone" validate:"required,e164"`
 	BirthDate time.Time `json:"birth_date" validate:"required"`
 	Email     string    `json:"email" validate:"required"`
 	Country   string    `json:"country"`
