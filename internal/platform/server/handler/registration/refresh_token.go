@@ -2,14 +2,13 @@ package registration
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"rumm-api/internal/core/service"
 	"rumm-api/kit/security"
 )
 
 type refreshResponse struct {
-	AccessToken string `json:"access_token"`
+	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
 }
 
@@ -17,8 +16,7 @@ func RefreshToken(accountService service.AccountService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		refreshToken := security.ExtractToken(r)
 		ctx := r.Context()
-		fmt.Println("token")
-		fmt.Println(refreshToken)
+
 		td, err := accountService.Refresh(ctx, refreshToken)
 
 		if err != nil {
@@ -27,13 +25,13 @@ func RefreshToken(accountService service.AccountService) http.HandlerFunc {
 		}
 
 		response := refreshResponse{
-			AccessToken: td.AccessToken,
+			AccessToken:  td.AccessToken,
 			RefreshToken: td.RefreshToken,
 		}
 
 		j, err := json.Marshal(response)
 
-		if err !=nil {
+		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -46,7 +44,6 @@ func RefreshToken(accountService service.AccountService) http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
 		return
-
 
 	}
 }

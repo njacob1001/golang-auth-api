@@ -2,11 +2,13 @@ package security
 
 import (
 	"context"
+	"crypto/rand"
 	"errors"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/go-redis/redis/v8"
 	"golang.org/x/crypto/bcrypt"
+	"io"
 	"net/http"
 	"rumm-api/kit/identifier"
 	"strings"
@@ -47,6 +49,32 @@ func ValidatePassword(hash []byte, password string) (bool, error) {
 	}
 
 	return false, err
+}
+
+type SnsTokenDetails struct {
+	SnsToken  string
+	FinishID  string
+	AtExpires int64
+	RtExpires int64
+}
+
+func CreateSnsToken(secret, phone, FinishID string) (SnsTokenDetails, error) {
+	td := SnsTokenDetails{}
+	td.AtExpires = time.Now().Add(time.Minute * 15).Unix()
+	td.RtExpires = time.Now().Add(time.Hour * 24 * 7).Unix()
+	var err error
+	atClaims := jwt.MapClaims{}
+	atClaims["authorized"] = true
+	atClaims["cellphone"] = phone
+	atClaims["finish_id"] = FinishID
+	atClaims["exp"] = td.AtExpires
+
+	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
+	td.SnsToken, err = at.SignedString([]byte(secret))
+	if err != nil {
+		return SnsTokenDetails{}, ErrTokenCreator
+	}
+	return td, nil
 }
 
 func CreateToken(secret, uuid string) (*TokenDetails, error) {
@@ -127,7 +155,7 @@ func VerifyToken(secret string, r *http.Request) (*jwt.Token, error) {
 	return token, nil
 }
 
-func TokenValid(secret string, r *http.Request) error {
+func IsTokenValid(secret string, r *http.Request) error {
 	token, err := VerifyToken(secret, r)
 	if err != nil {
 		return err
@@ -158,7 +186,29 @@ func ExtractTokenMetadata(secret string, r *http.Request) (*AccessDetails, error
 
 		return &AccessDetails{
 			AccessUuid: accessUuid,
-			UserID:   userId,
+			UserID:     userId,
+		}, nil
+	}
+	return nil, err
+}
+
+type SnsInfo struct {
+	Cellphone string
+}
+
+func ExtractSnsTokenData(secret string, r *http.Request) (*SnsInfo, error) {
+	token, err := VerifyToken(secret, r)
+	if err != nil {
+		return nil, err
+	}
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if ok && token.Valid {
+		cellphone, ok := claims["cellphone"].(string)
+		if !ok {
+			return nil, err
+		}
+		return &SnsInfo{
+			Cellphone: cellphone,
 		}, nil
 	}
 	return nil, err
@@ -179,4 +229,18 @@ func DeleteAuth(ctx context.Context, rdb *redis.Client, givenUUID string) (int64
 	}
 
 	return deleted, nil
+}
+
+var table = [...]byte{'1', '2', '3', '4', '5', '6', '7', '8', '9', '0'}
+
+func EncodeToString(max int) string {
+	b := make([]byte, max)
+	n, err := io.ReadAtLeast(rand.Reader, b, max)
+	if n != max {
+		panic(err)
+	}
+	for i := 0; i < len(b); i++ {
+		b[i] = table[int(b[i])%len(table)]
+	}
+	return string(b)
 }
