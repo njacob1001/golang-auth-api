@@ -10,5 +10,4 @@ func NewMessage(phoneNumber, content string) *sns.PublishInput {
 		Message:     aws.String(content),
 		PhoneNumber: aws.String(phoneNumber),
 	}
-
 }
