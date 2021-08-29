@@ -27,8 +27,6 @@ jobs:
 
     - name: Generate docker image
       if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
-      with:
-        ref: master
       run: docker build --tag auth .
     - name: Push to ECR
       if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
