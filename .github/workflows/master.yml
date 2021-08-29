@@ -10,6 +10,7 @@ on:
 
 jobs:
   build:
+    if: github.event.pull_request.merged
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -26,10 +27,8 @@ jobs:
       run: go test -v ./...
 
     - name: Generate docker image
-      if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
       run: docker build --tag auth .
     - name: Push to ECR
-      if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
       id: ecr
       uses: jwalton/gh-ecr-push@v1
       with:
@@ -37,4 +36,3 @@ jobs:
         secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         region: us-east-2
         image: 126378513321.dkr.ecr.us-east-2.amazonaws.com/auth:latest
-        ref: master
