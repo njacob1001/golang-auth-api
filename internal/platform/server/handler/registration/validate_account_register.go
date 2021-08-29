@@ -3,12 +3,13 @@ package registration
 import (
 	"encoding/json"
 	"net/http"
+	"rumm-api/internal/core/constants"
 	"rumm-api/internal/core/service"
+	"time"
 )
 
 type ValidateAccountResponse struct {
-	SnsToken string `json:"sns_token"`
-	FinishID string `json:"finish_id"`
+	Token string `json:"token"`
 }
 
 func ValidateAccountRegister(s service.AccountService) http.HandlerFunc {
@@ -20,27 +21,49 @@ func ValidateAccountRegister(s service.AccountService) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
+		// validate account schema
 		if err := s.Validate.Struct(req.Account); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
+		// validate profile schema
 		if err := s.Validate.Struct(req.Profile); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
+		// validate person schema
 		if err := s.Validate.Struct(req.Person); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		snsToken, err := s.VerifyAccountRegister(ctx, req.Person, req.Account, req.Profile)
+		// check if account already exist
+		if err := s.VerifyAccountRegister(ctx, req.Person, req.Account, req.Profile); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		// send code and save in cache
+		if err := s.RegisterCode(ctx, req.Person.Cellphone); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		// Create token
+		td, err := s.RegisterSnsToken(req.Person.Cellphone)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
+		// Init status of confirmation
+		if err := s.Cache.Set(ctx, td.AccessID, constants.ConfirmationCodeInit, time.Hour).Err(); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
 		response := ValidateAccountResponse{
-			SnsToken: snsToken,
+			Token: td.SnsToken,
 		}
 		j, err := json.Marshal(response)
 		if err != nil {

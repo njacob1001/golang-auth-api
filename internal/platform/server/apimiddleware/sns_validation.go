@@ -1,10 +1,13 @@
 package apimiddleware
 
 import (
+	"errors"
 	"net/http"
 	"rumm-api/internal/core/service"
 	"rumm-api/kit/security"
 )
+
+var ErrSnsExpires = errors.New("expired register")
 
 func SnsValidation(s service.AccountService) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
@@ -18,11 +21,12 @@ func SnsValidation(s service.AccountService) func(http.Handler) http.Handler {
 
 			value, err := s.Cache.Get(ctx, data.Cellphone).Result()
 			if err != nil {
-				http.Error(w, err.Error(), http.StatusUnauthorized)
+				http.Error(w, ErrSnsExpires.Error(), http.StatusUnauthorized)
+				s.Cache.Del(ctx, data.AccessID)
 				return
 			}
 			if value == "" {
-				http.Error(w, err.Error(), http.StatusUnauthorized)
+				http.Error(w, ErrSnsExpires.Error(), http.StatusUnauthorized)
 				return
 			}
 

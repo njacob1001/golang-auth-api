@@ -80,18 +80,11 @@ func (s AccountService) SendVerificationCode(ctx context.Context, phone, message
 	return err
 }
 
-func (s AccountService) RegisterCode(ctx context.Context, cellphone, finishID string) error {
+func (s AccountService) RegisterCode(ctx context.Context, cellphone string) error {
 	code := security.EncodeToString(4)
-	expiration := time.Unix(time.Now().Add(time.Minute).Unix(), 0)
 
-	if err := s.Cache.Set(ctx, cellphone, code, expiration.Sub(time.Now())).Err(); err != nil {
+	if err := s.Cache.Set(ctx, cellphone, code, time.Minute*5).Err(); err != nil {
 		return err
-	}
-
-	if finishID != "" {
-		if err := s.Cache.Set(ctx, finishID, "success", expiration.Sub(time.Now())).Err(); err != nil {
-			return err
-		}
 	}
 
 	message := fmt.Sprintf("Nadie en RUMM te va a solicitar este dato. No lo compartas. Tu codigo de seguridad es %v", code)
@@ -103,22 +96,12 @@ func (s AccountService) RegisterCode(ctx context.Context, cellphone, finishID st
 	return nil
 }
 
-func (s AccountService) VerifyAccountRegister(ctx context.Context, person domain.Person, account domain.Account, profile domain.Profile) (string, error) {
+func (s AccountService) VerifyAccountRegister(ctx context.Context, person domain.Person, account domain.Account, profile domain.Profile) error {
+	return s.accountRepository.ValidateRegister(ctx, account, profile, person)
+}
 
-	if err := s.accountRepository.ValidateRegister(ctx, account, profile, person); err != nil {
-		return "", err
-	}
-
-	if err := s.RegisterCode(ctx, person.Cellphone, ""); err != nil {
-		return "", err
-	}
-
-	td, err := security.CreateSnsToken(s.smsJwtSecret, person.Cellphone, "")
-	if err != nil {
-		return "", err
-	}
-
-	return td.SnsToken, nil
+func (s AccountService) RegisterSnsToken(cellphone string) (security.SnsTokenDetails, error) {
+	return security.CreateSnsToken(s.smsJwtSecret, cellphone)
 }
 
 func (s AccountService) GetSnsSecret() string {

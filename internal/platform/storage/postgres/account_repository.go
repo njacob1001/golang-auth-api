@@ -177,6 +177,5 @@ func (r *AccountRepository) ValidateRegister(ctx context.Context, account domain
 	if pfr.RowsAffected > 0 {
 		return ErrProfileRegistered
 	}
-	fmt.Println("no hay errores aqui")
 	return nil
 }

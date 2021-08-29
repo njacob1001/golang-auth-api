@@ -3,18 +3,19 @@ package registration
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
+	"rumm-api/internal/core/constants"
 	"rumm-api/internal/core/service"
-	"rumm-api/kit/identifier"
 	"rumm-api/kit/security"
+	"time"
 )
 
 type requestPayload struct {
-	Code string `json:"phone" validate:"required"`
+	Code string `json:"code" validate:"required"`
 }
 
-var incorrectCode = errors.New("account already registered")
+var incorrectCode = errors.New("incorrect code")
+var ErrStatusOutOfRange = errors.New("status is out of range")
 
 func Verify(s service.AccountService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -46,43 +47,29 @@ func Verify(s service.AccountService) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		fmt.Println(code)
-		fmt.Println(rp.Code)
-		if code != rp.Code {
-			http.Error(w, incorrectCode.Error(), http.StatusBadRequest)
-			return
-		}
 
-		tokenData, err := security.ExtractSnsTokenData(s.GetSnsSecret(), r)
+		status, err := s.Cache.Get(ctx, data.AccessID).Int()
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusUnauthorized)
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		finishID := identifier.CreateUUID()
-		td, err := security.CreateSnsToken(s.GetSnsSecret(), tokenData.Cellphone, finishID)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+		if status <= constants.ConfirmationCodeThirdIntent {
+			if code != rp.Code {
+				http.Error(w, incorrectCode.Error(), http.StatusBadRequest)
+				return
+			}
+
+			if err := s.Cache.Set(ctx, data.AccessID, constants.ConfirmationSuccess, time.Minute*20).Err(); err != nil {
+				http.Error(w, incorrectCode.Error(), http.StatusBadRequest)
+				return
+			}
+
+			w.WriteHeader(http.StatusCreated)
 			return
 		}
 
-		response := ValidateAccountResponse{
-			SnsToken: td.SnsToken,
-			FinishID: td.FinishID,
-		}
-
-		j, err := json.Marshal(response)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		if _, err := w.Write(j); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		w.WriteHeader(http.StatusCreated)
+		http.Error(w, ErrStatusOutOfRange.Error(), http.StatusBadRequest)
 		return
 
 	}
