@@ -1,4 +1,4 @@
-FROM golang:buster AS build
+FROM golang:alpine AS build
 
 ENV GO111MODULE=on
 
@@ -14,9 +14,9 @@ COPY . .
 
 RUN CGO_ENABLED=0 go build -o ./out/bin ./cmd/api/main.go
 
-#FROM scratch
-#
-#COPY --from=build ./out/bin ./out/bin
+FROM scratch
+
+COPY --from=build ./app/out/bin ./out/bin
 
 EXPOSE 80
 

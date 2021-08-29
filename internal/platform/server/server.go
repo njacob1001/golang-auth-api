@@ -13,6 +13,7 @@ import (
 	"os/signal"
 	"rumm-api/internal/core/service"
 	"rumm-api/internal/platform/server/apimiddleware"
+	"rumm-api/internal/platform/server/handler"
 	"rumm-api/internal/platform/server/handler/registration"
 	"time"
 )
@@ -105,6 +106,7 @@ func (s *Server) registerRoutes() {
 		s.router.Post("/account-init-register", registration.ValidateAccountRegister(s.accountService))
 		s.router.Post("/login", registration.ValidateAccount(s.accountService))
 		s.router.Post("/refresh", registration.RefreshToken(s.accountService))
+		s.router.Get("/health-check", handler.HealthCheck())
 	})
 }
 
