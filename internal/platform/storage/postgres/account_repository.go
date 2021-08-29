@@ -59,11 +59,18 @@ func (r *AccountRepository) Create(_ context.Context, account domain.Account, pr
 	return td, nil
 }
 
-func (r *AccountRepository) Authenticate(ctx context.Context, accIdentifier, password string) (*security.TokenDetails, error) {
+func (r *AccountRepository) Authenticate(ctx context.Context, accIdentifier, password, filterByType string) (*security.TokenDetails, error) {
 
 	var acc domain.Account
-	if err := r.db.Where("identifier = ?", accIdentifier).First(&acc).Error; err != nil {
-		return nil, fmt.Errorf("error trying to find account on database, account doesn't exist: %v", err)
+
+	if filterByType != "" {
+		if err := r.db.Where("identifier = ? AND type_id = ?", accIdentifier, filterByType).First(&acc).Error; err != nil {
+			return nil, fmt.Errorf("error trying to find account on database, account doesn't exist: %v", err)
+		}
+	} else {
+		if err := r.db.Where("identifier = ?", accIdentifier).First(&acc).Error; err != nil {
+			return nil, fmt.Errorf("error trying to find account on database, account doesn't exist: %v", err)
+		}
 	}
 
 	isValid, err := acc.ValidatePassword(password)
@@ -177,6 +184,5 @@ func (r *AccountRepository) ValidateRegister(ctx context.Context, account domain
 	if pfr.RowsAffected > 0 {
 		return ErrProfileRegistered
 	}
-	fmt.Println("no hay errores aqui")
 	return nil
 }

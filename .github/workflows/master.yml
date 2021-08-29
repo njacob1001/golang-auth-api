@@ -2,12 +2,13 @@ name: Master Test
 
 on:
   push:
-    branches: [ master ]
+    branches:
+      - master
   pull_request:
-    branches: [ master ]
+    branches:
+      - master
 
 jobs:
-
   build:
     runs-on: ubuntu-latest
     steps:
@@ -23,3 +24,22 @@ jobs:
 
     - name: Test
       run: go test -v ./...
+  build-and-push:
+    name: build and push image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Genertae docker image
+        if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+        with:
+          ref: master
+        run: docker build --tag auth .
+      - name: Push to ECR
+        if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+        id: ecr
+        uses: jwalton/gh-ecr-push@v1
+        with:
+          access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          region: us-east-2
+          image: 126378513321.dkr.ecr.us-east-2.amazonaws.com/auth:latest
+          ref: master

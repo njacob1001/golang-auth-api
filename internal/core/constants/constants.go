@@ -6,3 +6,11 @@ const (
 	ClientAccount       = "8a489a39-c0a6-462d-93ed-4d6114203ed9"
 	CollectorAccount    = "7a8e10b8-8609-4381-b03e-4cdd453ec63e"
 )
+const (
+	ConfirmationCodeInit = iota
+	ConfirmationCodeFirstIntent
+	ConfirmationCodeSecondIntent
+	ConfirmationCodeThirdIntent
+	ConfirmationSuccess
+	ConfirmationFailure
+)

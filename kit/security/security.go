@@ -53,20 +53,22 @@ func ValidatePassword(hash []byte, password string) (bool, error) {
 
 type SnsTokenDetails struct {
 	SnsToken  string
-	FinishID  string
+	Cellphone string
+	AccessID  string
 	AtExpires int64
-	RtExpires int64
 }
 
-func CreateSnsToken(secret, phone, FinishID string) (SnsTokenDetails, error) {
+func CreateSnsToken(secret, phone string) (SnsTokenDetails, error) {
 	td := SnsTokenDetails{}
-	td.AtExpires = time.Now().Add(time.Minute * 15).Unix()
-	td.RtExpires = time.Now().Add(time.Hour * 24 * 7).Unix()
+	td.AtExpires = time.Now().Add(time.Minute * 30).Unix()
+	td.Cellphone = phone
+
 	var err error
+	id := identifier.CreateUUID()
+	td.AccessID = id
 	atClaims := jwt.MapClaims{}
-	atClaims["authorized"] = true
 	atClaims["cellphone"] = phone
-	atClaims["finish_id"] = FinishID
+	atClaims["id"] = id
 	atClaims["exp"] = td.AtExpires
 
 	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
@@ -192,11 +194,7 @@ func ExtractTokenMetadata(secret string, r *http.Request) (*AccessDetails, error
 	return nil, err
 }
 
-type SnsInfo struct {
-	Cellphone string
-}
-
-func ExtractSnsTokenData(secret string, r *http.Request) (*SnsInfo, error) {
+func ExtractSnsTokenData(secret string, r *http.Request) (*SnsTokenDetails, error) {
 	token, err := VerifyToken(secret, r)
 	if err != nil {
 		return nil, err
@@ -207,7 +205,14 @@ func ExtractSnsTokenData(secret string, r *http.Request) (*SnsInfo, error) {
 		if !ok {
 			return nil, err
 		}
-		return &SnsInfo{
+
+		accessID, ok := claims["id"].(string)
+		if !ok {
+			return nil, err
+		}
+
+		return &SnsTokenDetails{
+			AccessID:  accessID,
 			Cellphone: cellphone,
 		}, nil
 	}

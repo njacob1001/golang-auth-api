@@ -9,12 +9,13 @@ import (
 )
 
 type validateAccountRequest struct {
-	Password   string `json:"password" binding:"required"`
-	Identifier string `json:"identifier" binding:"required"`
+	Password     string `json:"password" validate:"required"`
+	Identifier   string `json:"identifier" validate:"required"`
+	FilterByType string `json:"filter_by_type"`
 }
 
 type authResponse struct {
-	AccessToken string `json:"access_token"`
+	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
 }
 
@@ -29,7 +30,7 @@ func ValidateAccount(accountService service.AccountService) http.HandlerFunc {
 			return
 		}
 
-		td,err := accountService.Authenticate(ctx, req.Identifier, req.Password)
+		td, err := accountService.Authenticate(ctx, req.Identifier, req.Password, req.FilterByType)
 
 		if err != nil {
 			switch {
@@ -43,7 +44,7 @@ func ValidateAccount(accountService service.AccountService) http.HandlerFunc {
 		}
 
 		response := authResponse{
-			AccessToken: td.AccessToken,
+			AccessToken:  td.AccessToken,
 			RefreshToken: td.RefreshToken,
 		}
 
