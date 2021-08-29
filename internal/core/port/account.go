@@ -8,7 +8,7 @@ import (
 
 type AccountRepository interface {
 	Create(ctx context.Context, account domain.Account, profile domain.Profile, person domain.Person) (*security.TokenDetails, error)
-	Authenticate(ctx context.Context, accIdentifier, password string) (*security.TokenDetails, error)
+	Authenticate(ctx context.Context, accIdentifier, password, filterByType string) (*security.TokenDetails, error)
 	Logout(ctx context.Context, accessUuid string) error
 	Refresh(ctx context.Context, token string) (*security.TokenDetails, error)
 	ValidateRegister(ctx context.Context, account domain.Account, profile domain.Profile, person domain.Person) error
