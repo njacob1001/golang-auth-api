@@ -14,28 +14,26 @@ services:
     container_name: api
     image: rumm-api-auth:alplha
     build: .
-    env_file: .env.container
+    env_file:
+      - ./.env.container
     ports:
-      - '80:80'
+      - '8001:8001'
     depends_on:
       - database
     restart: unless-stopped
   database:
     container_name: database
     restart: unless-stopped
-    image: kartoza/postgis:13-3.1
-    env_file: .env.container
+    image: postgis/postgis:13-master
+    env_file:
+      - ./.env.container
     environment:
-      POSTGRES_DBNAME: "${RUMM_DBNAME}"
-      POSTGRES_USER: "${RUMM_DBUSER}"
-      POSTGRES_PASS: "${RUMM_DBPASS}"
-      POSTGRES_PASSWORD: "${RUMM_DBPASS}"
-      POSTGRES_DB: "${RUMM_DBNAME}"
+      POSTGRES_USER: ${AUTH_API_DB_USER}
+      POSTGRES_PASSWORD: ${AUTH_API_DB_PASS}
+      POSTGRES_DB: ${AUTH_API_DB_NAME}
     volumes:
       - pg_database:/var/lib/postgresql
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-    ports:
-      - '25432:5432'
   redis:
     container_name: redis
     image: redis:alpine3.13

@@ -22,3 +22,6 @@ dockerup:
 	echo "Ensure run this command with sudo"
 	docker-compose up -d
 
+docker:
+	echo "Ensure run this command with sudo"
+	redis-server & docker run -d -p 8001:8001 rumm-api-auth:alplha

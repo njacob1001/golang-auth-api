@@ -18,7 +18,7 @@ FROM scratch
 
 COPY --from=build ./app/out/bin ./out/bin
 
-EXPOSE 80
+EXPOSE 8001
 
 ENTRYPOINT ["./out/bin"]
 
