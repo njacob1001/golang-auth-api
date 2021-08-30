@@ -38,6 +38,7 @@ func New(ctx context.Context, options ...Option) (context.Context, Server, error
 	server := Server{
 		router: r,
 	}
+
 	for _, option := range options {
 		err := option(&server)
 		if err != nil {
