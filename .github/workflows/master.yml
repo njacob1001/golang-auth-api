@@ -23,7 +23,7 @@ jobs:
       run: go test -v ./...
 
     - name: Generate docker image
-      run: docker build --tag auth .
+      run: docker build -t auth . && docker tag auth:latest 126378513321.dkr.ecr.us-east-2.amazonaws.com/auth:latest
     - name: Push to ECR
       id: ecr
       uses: jwalton/gh-ecr-push@v1
