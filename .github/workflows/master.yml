@@ -23,7 +23,7 @@ jobs:
       run: go test -v ./...
 
     - name: Generate docker image
-      run: docker build -t auth . && docker tag auth:latest 126378513321.dkr.ecr.us-east-2.amazonaws.com/auth:latest
+      run: docker build -t auth .
     - name: Push to ECR
       id: ecr
       uses: jwalton/gh-ecr-push@v1
@@ -31,4 +31,4 @@ jobs:
         access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         region: us-east-2
-        image: 126378513321.dkr.ecr.us-east-2.amazonaws.com/auth:latest
+        image: auth:latest
