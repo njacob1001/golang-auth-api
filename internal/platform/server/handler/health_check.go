@@ -6,7 +6,7 @@ import (
 
 func HealthCheck() http.HandlerFunc {
 	return func(w http.ResponseWriter, _ *http.Request) {
-		w.WriteHeader(http.StatusCreated)
+		w.WriteHeader(http.StatusOK)
 		return
 	}
 }

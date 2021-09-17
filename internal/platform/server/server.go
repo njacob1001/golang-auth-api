@@ -90,6 +90,8 @@ func (s *Server) registerRoutes() {
 		MaxAge:           300, // Maximum value not ignored by any of major browsers
 	}))
 
+	s.router.Get("/", handler.HealthCheck())
+
 	// protected endpoints
 	s.router.Group(func(r chi.Router) {
 		r.Use(apimiddleware.JwtAuth(s.jwtSecret, s.rdb))
