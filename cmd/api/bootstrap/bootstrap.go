@@ -2,10 +2,12 @@ package bootstrap
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/sns"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/secretsmanager"
+	"github.com/aws/aws-sdk-go-v2/service/sns"
 	"github.com/go-playground/validator/v10"
 	"github.com/go-redis/redis/v8"
 	"github.com/kelseyhightower/envconfig"
@@ -18,14 +20,55 @@ import (
 	"time"
 )
 
+type databaseCredential struct {
+	Password string `json:"password"`
+	Username string `json:"username"`
+}
+
 func Run() error {
+	secretName := "development/app-db"
 	var cfg configEnv
 	err := envconfig.Process("AUTH_API", &cfg)
 	if err != nil {
 		return err
 	}
 
-	postgresURI := fmt.Sprintf("host=%v user=%v password=%v dbname=%v port=%v sslmode=disable TimeZone=-5", cfg.DbHost, cfg.DbUser, cfg.DbPass, cfg.DbName, cfg.DbPort)
+	awsCfg, err := config.LoadDefaultConfig(context.TODO(),
+		config.WithRegion(cfg.Region),
+	)
+	if err != nil {
+		return err
+	}
+
+	svc := sns.NewFromConfig(awsCfg)
+
+	secretClient := secretsmanager.New(secretsmanager.Options{
+		Region:      cfg.Region,
+		Credentials: awsCfg.Credentials,
+	})
+
+	input := &secretsmanager.GetSecretValueInput{
+		SecretId:     aws.String(secretName),
+		VersionStage: aws.String("AWSCURRENT"),
+	}
+
+	secretResult, err := secretClient.GetSecretValue(context.Background(), input)
+	if err != nil {
+		return err
+	}
+
+	var secretString string
+
+	var dbc databaseCredential
+
+	if secretResult.SecretString != nil {
+		secretString = *secretResult.SecretString
+		if err := json.Unmarshal([]byte(secretString), &dbc); err != nil {
+			return err
+		}
+	}
+
+	postgresURI := fmt.Sprintf("host=%v user=%v password=%v dbname=%v port=%v sslmode=disable TimeZone=-5", cfg.DbHost, dbc.Username, dbc.Password, cfg.DbName, cfg.DbPort)
 
 	db, err := gorm.Open(postgres.Open(postgresURI), &gorm.Config{})
 	if err != nil {
@@ -37,12 +80,6 @@ func Run() error {
 		Addr: redisURI,
 		DB:   cfg.CacheIndex,
 	})
-
-	sess := session.Must(session.NewSession(&aws.Config{
-		Region: aws.String("us-east-2"),
-	}))
-
-	svc := sns.New(sess)
 
 	accountRepository := postgresdb.NewAccountRepository(db, cfg.DbTimeout, cfg.JwtSecret, rdb)
 
@@ -72,6 +109,7 @@ type configEnv struct {
 	Port            uint          `default:"80" split_words:"true"`
 	ShutdownTimeout time.Duration `default:"10s" split_words:"true"`
 	Mode            string        `default:"DEVELOP" split_words:"true"`
+	Region          string        `default:"us-east-2" split_words:"true"`
 	DbUser          string        `default:"admin" split_words:"true"`
 	DbPass          string        `default:"admin123" split_words:"true"`
 	DbHost          string        `default:"0.0.0.0" split_words:"true"`
