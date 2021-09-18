@@ -26,7 +26,7 @@ COPY --from=alpine /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 COPY --from=build ./app/out/bin ./out/bin
 
-EXPOSE 8001
+EXPOSE 80
 
 ENTRYPOINT ["./out/bin"]
 
