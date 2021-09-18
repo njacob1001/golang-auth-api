@@ -25,8 +25,14 @@ type databaseCredential struct {
 	Username string `json:"username"`
 }
 
+type seed struct {
+	Auth string `json:"auth"`
+	Sns  string `json:"sns"`
+}
+
 func Run() error {
 	secretName := "development/app-db"
+	seedsSecretName := "seeds"
 	var cfg configEnv
 	err := envconfig.Process("AUTH_API", &cfg)
 	if err != nil {
@@ -52,7 +58,17 @@ func Run() error {
 		VersionStage: aws.String("AWSCURRENT"),
 	}
 
+	seedsInput := &secretsmanager.GetSecretValueInput{
+		SecretId:     aws.String(seedsSecretName),
+		VersionStage: aws.String("AWSCURRENT"),
+	}
+
 	secretResult, err := secretClient.GetSecretValue(context.Background(), input)
+	if err != nil {
+		return err
+	}
+
+	seedsResult, err := secretClient.GetSecretValue(context.Background(), seedsInput)
 	if err != nil {
 		return err
 	}
@@ -64,6 +80,16 @@ func Run() error {
 	if secretResult.SecretString != nil {
 		secretString = *secretResult.SecretString
 		if err := json.Unmarshal([]byte(secretString), &dbc); err != nil {
+			return err
+		}
+	}
+
+	var seedsSecretString string
+	var sr seed
+
+	if seedsResult.SecretString != nil {
+		seedsSecretString = *seedsResult.SecretString
+		if err := json.Unmarshal([]byte(seedsSecretString), &sr); err != nil {
 			return err
 		}
 	}
@@ -81,13 +107,13 @@ func Run() error {
 		DB:   cfg.CacheIndex,
 	})
 
-	accountRepository := postgresdb.NewAccountRepository(db, cfg.DbTimeout, cfg.JwtSecret, rdb)
+	accountRepository := postgresdb.NewAccountRepository(db, cfg.DbTimeout, sr.Auth, rdb)
 
 	isDevelopMode := cfg.Mode == "DEVELOP"
 
 	validate := validator.New()
 
-	accountService := service.NewAccountService(accountRepository, svc, validate, rdb, cfg.SnsTimeout, cfg.JwtSecret, cfg.SmsJwtSecret)
+	accountService := service.NewAccountService(accountRepository, svc, validate, rdb, cfg.SnsTimeout, sr.Auth, sr.Sns)
 
 	ctx, srv, err := server.New(
 		context.Background(),
@@ -95,7 +121,7 @@ func Run() error {
 		server.WithAddress(cfg.Host, cfg.Port),
 		server.WithAccountService(accountService),
 		server.WithDevelopEnv(isDevelopMode),
-		server.WithJwtSecret(cfg.JwtSecret),
+		server.WithJwtSecret(sr.Auth),
 		server.WithRedis(rdb))
 
 	if err != nil {
@@ -111,14 +137,11 @@ type configEnv struct {
 	Mode            string        `default:"DEVELOP" split_words:"true"`
 	Region          string        `default:"us-east-2" split_words:"true"`
 	DbUser          string        `default:"admin" split_words:"true"`
-	DbPass          string        `default:"admin123" split_words:"true"`
 	DbHost          string        `default:"0.0.0.0" split_words:"true"`
 	DbPort          uint          `default:"5432" split_words:"true"`
 	DbName          string        `default:"develop" split_words:"true"`
 	DbSchema        string        `default:"public" split_words:"true"`
 	DbTimeout       time.Duration `default:"5s" split_words:"true"`
-	JwtSecret       string        `default:"example_secret" split_words:"true"`
-	SmsJwtSecret    string        `default:"example_secret" split_words:"true"`
 	CacheIndex      int           `default:"1" split_words:"true"`
 	CacheHost       string        `default:"0.0.0.0" split_words:"true"`
 	CachePort       uint          `default:"6379" split_words:"true"`
