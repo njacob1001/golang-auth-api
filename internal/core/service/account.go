@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
-	"github.com/aws/aws-sdk-go/service/sns"
+	"github.com/aws/aws-sdk-go-v2/service/sns"
 	"github.com/go-playground/validator/v10"
 	"github.com/go-redis/redis/v8"
 	"rumm-api/internal/core/domain"
@@ -17,13 +17,13 @@ type AccountService struct {
 	accountRepository port.AccountRepository
 	smsJwtSecret      string
 	authJwtSecret     string
-	sns               *sns.SNS
+	sns               *sns.Client
 	snsTimeout        time.Duration
 	Validate          *validator.Validate
 	Cache             *redis.Client
 }
 
-func NewAccountService(accountRepository port.AccountRepository, sns *sns.SNS, validate *validator.Validate, cache *redis.Client, timeout time.Duration, authJwtSecret, smsJwtSecret string) AccountService {
+func NewAccountService(accountRepository port.AccountRepository, sns *sns.Client, validate *validator.Validate, cache *redis.Client, timeout time.Duration, authJwtSecret, smsJwtSecret string) AccountService {
 	return AccountService{
 		accountRepository: accountRepository,
 		smsJwtSecret:      smsJwtSecret,
@@ -75,7 +75,8 @@ func (s AccountService) SendVerificationCode(ctx context.Context, phone, message
 	defer cancel()
 
 	message := sender.NewMessage(phone, messageContent)
-	_, err := s.sns.PublishWithContext(ctxTimeout, message)
+
+	_, err := s.sns.Publish(ctxTimeout, message)
 
 	return err
 }
