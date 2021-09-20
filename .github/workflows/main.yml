@@ -36,13 +36,13 @@ jobs:
       - name: Build, tag, and push image to Amazon ECR
         id: build-image
         run: |
-          docker build -t 126378513321.dkr.ecr.us-east-2.amazonaws.com/auth:latest .
-          docker push 126378513321.dkr.ecr.us-east-2.amazonaws.com/auth:latest
-          echo "::set-output name=image::126378513321.dkr.ecr.us-east-2.amazonaws.com/auth:latest"
+          docker build -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:latest .
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:latest
+          echo "::set-output name=image::${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:latest"
 
       - name: Download task definition
         run: |
-          aws ecs describe-task-definition --task-definition auth-task \
+          aws ecs describe-task-definition --task-definition ${{ secrets.AWS_TASK_DEFINITION_NAME }} \
           --query taskDefinition > task-definition.json
 
       - name: Fill in the new image ID in the Amazon ECS task definition
@@ -50,7 +50,7 @@ jobs:
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: task-definition.json
-          container-name: auth-image
+          container-name: ${{ secrets.AWS_TASK_CONTAINER_NAME }}
           image: ${{ steps.build-image.outputs.image }}
 
       - name: Deploy Amazon ECS task definition
@@ -60,4 +60,5 @@ jobs:
           service: ${{ secrets.ECS_SERVICE }}
           cluster: ${{ secrets.ECS_CLUSTER }}
           wait-for-service-stability: true
+
 
