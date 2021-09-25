@@ -23,7 +23,7 @@ func TestAccountDomain(t *testing.T) {
 		assert.True(t, result)
 	})
 
-	t.Run("Validate password should be true", func(t *testing.T) {
+	t.Run("Validate password should be false", func(t *testing.T) {
 		pass, err := security.GetHash("testingpass")
 		require.NoError(t, err)
 
