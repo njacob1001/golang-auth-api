@@ -97,9 +97,14 @@ func (s AccountService) RegisterCode(ctx context.Context, cellphone string) erro
 	return nil
 }
 
-func (s AccountService) VerifyAccountRegister(ctx context.Context, person domain.Person, account domain.Account, profile domain.Profile) error {
-	return s.accountRepository.ValidateRegister(ctx, account, profile, person)
+func (s AccountService) VerifyAccountRegister(ctx context.Context, person domain.Person) error {
+	return s.accountRepository.ValidateRegister(ctx, person)
 }
+
+func (s AccountService) ValidateAccountExists(ctx context.Context, acc domain.Account) error {
+	return s.accountRepository.ValidateAccount(ctx, acc)
+}
+
 
 func (s AccountService) RegisterSnsToken(cellphone string) (security.SnsTokenDetails, error) {
 	return security.CreateSnsToken(s.smsJwtSecret, cellphone)

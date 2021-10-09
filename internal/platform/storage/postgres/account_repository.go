@@ -166,23 +166,29 @@ var ErrAccountRegistered = errors.New("account already registered")
 var ErrPersonRegistered = errors.New("person already registered")
 var ErrProfileRegistered = errors.New("profile already registered")
 
-func (r *AccountRepository) ValidateRegister(ctx context.Context, account domain.Account, profile domain.Profile, person domain.Person) error {
+func (r *AccountRepository) ValidateRegister(ctx context.Context, person domain.Person) error {
 	ctxTimeout, cancel := context.WithTimeout(ctx, r.dbTimeout)
 	defer cancel()
 
-	ar := r.db.WithContext(ctxTimeout).Where("identifier = ?", account.Identifier).Find(&account)
-	if ar.RowsAffected > 0 {
-		return ErrAccountRegistered
-	}
 
 	pr := r.db.WithContext(ctxTimeout).Where("email = ?", person.Email).Or("cellphone = ?", person.Photo).Or("id_number = ?", person.IDNumber).Find(&person)
 	if pr.RowsAffected > 0 {
 		return ErrPersonRegistered
 	}
 
-	pfr := r.db.WithContext(ctxTimeout).Find(&profile)
-	if pfr.RowsAffected > 0 {
-		return ErrProfileRegistered
-	}
+
 	return nil
+}
+// ValidateAccount verify if account already exists
+func (r AccountRepository) ValidateAccount(ctx context.Context, acc domain.Account) error {
+	ctxTimeout, cancel := context.WithTimeout(ctx, r.dbTimeout)
+	defer cancel()
+
+	ar := r.db.WithContext(ctxTimeout).Where("identifier = ?", acc.Identifier).Or("id = ?", acc.ID).Find(&acc)
+	if ar.RowsAffected > 0 {
+		return ErrAccountRegistered
+	}
+
+	return nil
+
 }
