@@ -107,6 +107,7 @@ func (s *Server) registerRoutes() {
 
 	s.router.Group(func(r chi.Router) {
 		s.router.Post("/account-init-register", registration.ValidateAccountRegister(s.accountService))
+		s.router.Post("/account-validation", registration.ValidateAccountExists(s.accountService))
 		s.router.Post("/login", registration.ValidateAccount(s.accountService))
 		s.router.Post("/refresh", registration.RefreshToken(s.accountService))
 		s.router.Get("/health-check", handler.HealthCheck())
