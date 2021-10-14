@@ -17,6 +17,7 @@ type validateAccountRequest struct {
 type authResponse struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
+	ID           string `json:"id,omitempty"`
 }
 
 func ValidateAccount(accountService service.AccountService) http.HandlerFunc {
@@ -46,6 +47,7 @@ func ValidateAccount(accountService service.AccountService) http.HandlerFunc {
 		response := authResponse{
 			AccessToken:  td.AccessToken,
 			RefreshToken: td.RefreshToken,
+			ID:           td.ID,
 		}
 
 		j, err := json.Marshal(response)
