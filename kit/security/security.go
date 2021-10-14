@@ -16,6 +16,7 @@ import (
 )
 
 type TokenDetails struct {
+	ID           string
 	AccessToken  string
 	RefreshToken string
 	AccessUuid   string
@@ -81,6 +82,7 @@ func CreateSnsToken(secret, phone string) (SnsTokenDetails, error) {
 
 func CreateToken(secret, uuid string) (*TokenDetails, error) {
 	td := new(TokenDetails)
+	td.ID = uuid
 	td.AtExpires = time.Now().Add(time.Minute * 15).Unix()
 	td.AccessUuid = identifier.CreateUUID()
 	td.RtExpires = time.Now().Add(time.Hour * 24 * 7).Unix()
