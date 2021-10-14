@@ -170,15 +170,14 @@ func (r *AccountRepository) ValidateRegister(ctx context.Context, person domain.
 	ctxTimeout, cancel := context.WithTimeout(ctx, r.dbTimeout)
 	defer cancel()
 
-
 	pr := r.db.WithContext(ctxTimeout).Where("email = ?", person.Email).Or("cellphone = ?", person.Photo).Or("id_number = ?", person.IDNumber).Find(&person)
 	if pr.RowsAffected > 0 {
 		return ErrPersonRegistered
 	}
 
-
 	return nil
 }
+
 // ValidateAccount verify if account already exists
 func (r AccountRepository) ValidateAccount(ctx context.Context, acc domain.Account) error {
 	ctxTimeout, cancel := context.WithTimeout(ctx, r.dbTimeout)
@@ -190,5 +189,34 @@ func (r AccountRepository) ValidateAccount(ctx context.Context, acc domain.Accou
 	}
 
 	return nil
+
+}
+func (r AccountRepository) IdentifyUser(ctx context.Context, accountID string) (domain.User, error) {
+	ctxTimeout, cancel := context.WithTimeout(ctx, r.dbTimeout)
+	defer cancel()
+
+	var account domain.Account
+	var profile domain.Profile
+	var person domain.Person
+
+
+	if err := r.db.WithContext(ctxTimeout).Omit("password").Where("id = ?", accountID).Find(&account).Error; err != nil {
+		return domain.User{}, err
+	}
+
+
+	if err := r.db.WithContext(ctxTimeout).Where("account_id = ?", accountID).Find(&profile).Error; err != nil {
+		return domain.User{}, err
+	}
+
+	if err := r.db.WithContext(ctxTimeout).Where("id = ?",  account.PersonID).Find(&person).Error; err != nil {
+		return domain.User{}, err
+	}
+
+	return domain.User{
+		Account: account,
+		Profile: profile,
+		Person: person,
+	}, nil
 
 }
