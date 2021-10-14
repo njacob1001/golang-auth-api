@@ -113,3 +113,7 @@ func (s AccountService) RegisterSnsToken(cellphone string) (security.SnsTokenDet
 func (s AccountService) GetSnsSecret() string {
 	return s.smsJwtSecret
 }
+
+func (s AccountService) IdentifyUser(ctx context.Context, accountID string) (domain.User, error) {
+	return s.accountRepository.IdentifyUser(ctx, accountID)
+}

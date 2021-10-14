@@ -96,6 +96,7 @@ func (s *Server) registerRoutes() {
 	s.router.Group(func(r chi.Router) {
 		r.Use(apimiddleware.JwtAuth(s.jwtSecret, s.rdb))
 		r.Post("/logout", registration.Logout(s.accountService, s.jwtSecret))
+		r.Post("/identify-user", handler.IdentifyUser(s.accountService))
 	})
 
 	s.router.Group(func(r chi.Router) {
