@@ -13,6 +13,7 @@ type AccountRepository interface {
 	Refresh(ctx context.Context, token string) (*security.TokenDetails, error)
 	ValidateRegister(ctx context.Context, person domain.Person) error
 	ValidateAccount(ctx context.Context, person domain.Account) error
+	IdentifyUser(ctx context.Context, accountID string) (domain.User, error)
 }
 
 //go:generate mockery --case=snake --outpkg=storagemocks --output=../../../mocks/mockups --name=AccountRepository

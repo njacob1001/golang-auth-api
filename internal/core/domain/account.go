@@ -40,6 +40,13 @@ type Account struct {
 	PersonID      string    `json:"person_id" validate:"required,uuid4"`
 	TypeID        string    `json:"type_id" validate:"required,uuid4"`
 	LastLogin     time.Time `json:"last_login"`
+	CorporateAccount bool `json:"corporate_account"`
+}
+
+type User struct {
+	Profile Profile `json:"profile"`
+	Account Account `json:"account"`
+	Person  Person  `json:"person"`
 }
 
 var ErrAccountValidation = errors.New("account validation error")
