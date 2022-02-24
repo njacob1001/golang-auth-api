@@ -1,4 +1,4 @@
-# Rumm api authentication microservice
+# Golang authentication microservice
 
 [![GitHub go.mod Go version of a Go module](https://img.shields.io/github/go-mod/go-version/njacob1001/go-hexagonal-baseline)](https://github.com/njacob1001/rumm-api-alpha)
 ![Tests and build main](https://github.com/njacob1001/rumm-api-auth/actions/workflows/main.yml/badge.svg)
